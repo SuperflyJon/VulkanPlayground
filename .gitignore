@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+#External output
+External/gli/out/
+External/glm/out/
+External/freetype/out/
+
 # User-specific files
 *.rsuser
 *.suo
@@ -338,3 +343,5 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/*.cap
+MiscFiles

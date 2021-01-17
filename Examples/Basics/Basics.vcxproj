@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{8698CB22-68ED-435C-B9D0-DB5A64770111}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Basics</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\..\scripts\VulkanPlayground.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\int\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\$(ProjectName)\$(Configuration)\int\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>COMBINED_EXAMPLES;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>VulkanPlayground\Includes.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>COMBINED_EXAMPLES;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>VulkanPlayground\Includes.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="3dTextures\MoreQuads3d\3dTexturesMoreQuads3d.cpp" />
+    <ClCompile Include="3dTextures\Noise3d\3dTexturesNoise3d.cpp" />
+    <ClCompile Include="3dTextures\Noise3d\NoiseGenerator.cpp" />
+    <ClCompile Include="3dTextures\SamplerArrayMoreQuads\3dTexturesSamplerArrayMoreQuads.cpp" />
+    <ClCompile Include="3dTextures\SamplerArrayQuads\3dTexturesSamplerArrayQuads.cpp" />
+    <ClCompile Include="AppGroups.cpp" />
+    <ClCompile Include="Basics.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="CubeMap\Boxed\CubeMapBoxed.cpp" />
+    <ClCompile Include="CubeMap\CubeMapPlusModels\CubeMapPlusModels.cpp" />
+    <ClCompile Include="CubeMap\CubeMap\CubeMapCubeMap.cpp" />
+    <ClCompile Include="CubeMap\Models\CubeMapModels.cpp" />
+    <ClCompile Include="CubeMap\ReflectModels\CubeMapReflectModels.cpp" />
+    <ClCompile Include="CubeMap\TextureArray\CubeMapTextureArray.cpp" />
+    <ClCompile Include="CubeMap\Unboxed\CubeMapUnboxed.cpp" />
+    <ClCompile Include="DescriptorSets\Cube1\DescriptorSetsCube1.cpp" />
+    <ClCompile Include="DescriptorSets\Cube2\DescriptorSetsCube2.cpp" />
+    <ClCompile Include="DescriptorSets\LitCubes\DescriptorSetsLitCubes.cpp" />
+    <ClCompile Include="DescriptorSets\TwoCubes\DescriptorSetsTwoCubes.cpp" />
+    <ClCompile Include="DynamicUniformBuffer\CubeOfCubes\DynamicUniformBufferCubeOfCubes.cpp" />
+    <ClCompile Include="DynamicUniformBuffer\LitCubes\DynamicUniformBufferLitCubes.cpp" />
+    <ClCompile Include="DynamicUniformBuffer\MultipleCubes\DynamicUniformBufferMultipleCubes.cpp" />
+    <ClCompile Include="DynamicUniformBuffer\SpinningCubes\DynamicUniformBufferSpinningCubes.cpp" />
+    <ClCompile Include="InputAttachments\Depth\InputAttachmentsDepth.cpp" />
+    <ClCompile Include="InputAttachments\Multipass\InputAttachmentsMultiPass.cpp" />
+    <ClCompile Include="InputAttachments\Scene\InputAttachmentsScene.cpp" />
+    <ClCompile Include="Model\LitTestMesh\ModelLitTestMesh.cpp" />
+    <ClCompile Include="Model\TestMesh\ModelTestMesh.cpp" />
+    <ClCompile Include="Model\TestModel\ModelTestModel.cpp" />
+    <ClCompile Include="Offscreen\Offscreen\OffscreenOffscreen.cpp" />
+    <ClCompile Include="Offscreen\Reflect\OffscreenReflect.cpp" />
+    <ClCompile Include="Offscreen\Scene\OffscreenScene.cpp" />
+    <ClCompile Include="Particles\Combined\ParticlesCombined.cpp" />
+    <ClCompile Include="Particles\Fire\ParticlesFire.cpp" />
+    <ClCompile Include="Particles\Flame\ParticlesFlame.cpp" />
+    <ClCompile Include="Particles\NormalMap\ParticlesNormalMap.cpp" />
+    <ClCompile Include="Particles\Smoke\ParticlesSmoke.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Pipelines\DynamicViewports\PipelinesDynamicViewports.cpp" />
+    <ClCompile Include="Pipelines\MultipleDerived\PipelinesMultipleDerived.cpp" />
+    <ClCompile Include="Pipelines\Multiple\PipelinesMultiple.cpp" />
+    <ClCompile Include="Pipelines\Scene1\PipelinesScene1.cpp" />
+    <ClCompile Include="Pipelines\Scene2\PipelinesScene2.cpp" />
+    <ClCompile Include="Pipelines\Scene3\PipelinesScene3.cpp" />
+    <ClCompile Include="PushConstants\Cubes\PushConstantsCubes.cpp" />
+    <ClCompile Include="PushConstants\Model\PushConstantsModel.cpp" />
+    <ClCompile Include="PushConstants\MultiSpot\PushConstantMultiSpot.cpp" />
+    <ClCompile Include="PushConstants\PushConstantSpot\PushConstantPushConstantSpot.cpp" />
+    <ClCompile Include="PushConstants\UniformSpot\PushConstantsUniformSpot.cpp" />
+    <ClCompile Include="SpecializationConstants\MultipleScenes\SpecializationConstantsMultipleScenes.cpp" />
+    <ClCompile Include="SpecializationConstants\Scene1\SpecializationConstantsScene1.cpp" />
+    <ClCompile Include="SpecializationConstants\Scene2\SpecializationConstantsScene2.cpp" />
+    <ClCompile Include="SpecializationConstants\Scene3\SpecializationConstantsScene3.cpp" />
+    <ClCompile Include="SpecializationConstants\UberShaderSingle\SpecializationConstantsUberShaderSingle.cpp" />
+    <ClCompile Include="SpecializationConstants\UberShader\SpecializationConstantsUberShader.cpp" />
+    <ClCompile Include="StencilBuffer\CutOut\StencilBufferCutOut.cpp" />
+    <ClCompile Include="StencilBuffer\Highlight\StencilBufferHighlight.cpp" />
+    <ClCompile Include="StencilBuffer\Obscured\StencilBufferObscured.cpp" />
+    <ClCompile Include="StencilBuffer\Outline\StencilBufferOutline.cpp" />
+    <ClCompile Include="StencilBuffer\Scene\StencilBufferScene.cpp" />
+    <ClCompile Include="StencilBuffer\Stencil\StencilBufferStencil.cpp" />
+    <ClCompile Include="SubPasses\GBufferDraw\SubPassesGBufferDraw.cpp" />
+    <ClCompile Include="SubPasses\GBufferGlass\SubPassesGBufferGlass.cpp" />
+    <ClCompile Include="SubPasses\GBufferLit\SubPassesGBufferLit.cpp" />
+    <ClCompile Include="SubPasses\GBuffer\SubPassesGBuffer.cpp" />
+    <ClCompile Include="SubPasses\Scene\SubPassesScene.cpp" />
+    <ClCompile Include="TextureArray\Instancing\TextureArrayInstancing.cpp" />
+    <ClCompile Include="TextureArray\SamplerArray\TextureArraySamplerArray.cpp" />
+    <ClCompile Include="TextureArray\TextureArray\TextureArrayTextureArray.cpp" />
+    <ClCompile Include="Texture\LoDTest\TextureLoDTest.cpp" />
+    <ClCompile Include="Texture\LoD\TextureLoD.cpp" />
+    <ClCompile Include="Texture\Shield\TextureShield.cpp" />
+    <ClCompile Include="Triangle\3d\Triangle3d.cpp" />
+    <ClCompile Include="Triangle\Light\TriangleLight.cpp" />
+    <ClCompile Include="Triangle\Simple\TriangleSimple.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Library\VulkanPlayground.vcxproj">
+      <Project>{2d3f3b8d-6b92-4bf4-9317-0815d5e93503}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Shader Include="3dTextures\Shaders\MoreQuads3d.frag" />
+    <Shader Include="3dTextures\Shaders\MoreQuads3d.vert" />
+    <Shader Include="3dTextures\Shaders\Noise3d.frag" />
+    <Shader Include="3dTextures\Shaders\Noise3d.vert" />
+    <Shader Include="3dTextures\Shaders\SamplerArrayMoreQuads.frag" />
+    <Shader Include="3dTextures\Shaders\SamplerArrayMoreQuads.vert" />
+    <Shader Include="3dTextures\Shaders\SamplerArrayQuads.frag" />
+    <Shader Include="3dTextures\Shaders\SamplerArrayQuads.vert" />
+    <Shader Include="CubeMap\Shaders\CubeMap.frag" />
+    <Shader Include="CubeMap\Shaders\CubeMap.vert" />
+    <Shader Include="CubeMap\Shaders\Models.frag" />
+    <Shader Include="CubeMap\Shaders\Models.vert" />
+    <Shader Include="CubeMap\Shaders\ReflectModels.frag" />
+    <Shader Include="CubeMap\Shaders\ReflectModels.vert" />
+    <Shader Include="CubeMap\Shaders\TextureArray.frag" />
+    <Shader Include="CubeMap\Shaders\TextureArray.vert" />
+    <Shader Include="DescriptorSets\shaders\cube.frag" />
+    <Shader Include="DescriptorSets\shaders\cube.vert" />
+    <Shader Include="DescriptorSets\shaders\cubelit.frag" />
+    <Shader Include="DescriptorSets\shaders\cubelit.vert" />
+    <Shader Include="DynamicUniformBuffer\CubeOfCubes\cubeDynUbo.frag" />
+    <Shader Include="DynamicUniformBuffer\CubeOfCubes\cubeDynUbo.vert" />
+    <Shader Include="DynamicUniformBuffer\LitCubes\cubeDynUboLit.frag" />
+    <Shader Include="DynamicUniformBuffer\LitCubes\cubeDynUboLit.vert" />
+    <Shader Include="DynamicUniformBuffer\MultipleCubes\cube.frag" />
+    <Shader Include="DynamicUniformBuffer\MultipleCubes\cube.vert" />
+    <Shader Include="DynamicUniformBuffer\SpinningCubes\cubeDynUboSpin.frag" />
+    <Shader Include="DynamicUniformBuffer\SpinningCubes\cubeDynUboSpin.vert" />
+    <Shader Include="InputAttachments\Depth\Depth.vert" />
+    <Shader Include="InputAttachments\Depth\ReadDepthAttach.frag" />
+    <Shader Include="InputAttachments\Depth\ReadDepthAttach.vert" />
+    <Shader Include="InputAttachments\Multipass\MultiReadAttach.frag" />
+    <Shader Include="InputAttachments\Multipass\MultiReadAttach.vert" />
+    <Shader Include="InputAttachments\Multipass\Scene.frag" />
+    <Shader Include="InputAttachments\Multipass\Scene.vert" />
+    <Shader Include="InputAttachments\Scene\Scene.frag" />
+    <Shader Include="InputAttachments\Scene\Scene.vert" />
+    <Shader Include="Model\Shaders\LitTestMesh.frag" />
+    <Shader Include="Model\Shaders\LitTestMesh.vert" />
+    <Shader Include="Model\Shaders\Model.frag" />
+    <Shader Include="Model\Shaders\Model.vert" />
+    <Shader Include="Offscreen\Shaders\OffScene.frag" />
+    <Shader Include="Offscreen\Shaders\OffScene.vert" />
+    <Shader Include="Offscreen\Shaders\quad.frag" />
+    <Shader Include="Offscreen\Shaders\quad.vert" />
+    <Shader Include="Offscreen\Shaders\Reflect.frag" />
+    <Shader Include="Offscreen\Shaders\Reflect.vert" />
+    <Shader Include="Offscreen\Shaders\Test.frag" />
+    <Shader Include="Offscreen\Shaders\Test.vert" />
+    <Shader Include="Particles\Combined\NormalMap.frag" />
+    <Shader Include="Particles\Combined\NormalMap.vert" />
+    <Shader Include="Particles\Flame\Flame.frag" />
+    <Shader Include="Particles\NormalMap\NormalMapTest.frag" />
+    <Shader Include="Particles\NormalMap\NormalMapTest.vert" />
+    <Shader Include="Particles\Shaders\Fire.frag" />
+    <Shader Include="Particles\Shaders\Particles.vert" />
+    <Shader Include="Particles\Shaders\TestTexture.frag" />
+    <Shader Include="Particles\Shaders\TestTexture.vert" />
+    <Shader Include="Particles\Smoke\Smoke.frag" />
+    <Shader Include="Pipelines\Shaders\PipelinesScene1.frag" />
+    <Shader Include="Pipelines\Shaders\PipelinesScene1.vert" />
+    <Shader Include="Pipelines\Shaders\PipelinesScene2.frag" />
+    <Shader Include="Pipelines\Shaders\PipelinesScene2.vert" />
+    <Shader Include="Pipelines\Shaders\PipelinesScene3.frag" />
+    <Shader Include="Pipelines\Shaders\PipelinesScene3.vert" />
+    <Shader Include="PushConstants\Cubes\cubePCLit.frag" />
+    <Shader Include="PushConstants\Cubes\cubePCLit.vert" />
+    <Shader Include="PushConstants\Shaders\MultiSpot.frag" />
+    <Shader Include="PushConstants\Shaders\PushConstantSpot.frag" />
+    <Shader Include="PushConstants\Shaders\SampleModel.frag" />
+    <Shader Include="PushConstants\Shaders\SampleModel.vert" />
+    <Shader Include="PushConstants\Shaders\UniformSpot.frag" />
+    <Shader Include="SpecializationConstants\Shaders\ScScene1.frag" />
+    <Shader Include="SpecializationConstants\Shaders\ScScene1.vert" />
+    <Shader Include="SpecializationConstants\Shaders\ScScene2.frag" />
+    <Shader Include="SpecializationConstants\Shaders\ScScene2.vert" />
+    <Shader Include="SpecializationConstants\Shaders\ScScene3.frag" />
+    <Shader Include="SpecializationConstants\Shaders\ScScene3.vert" />
+    <Shader Include="SpecializationConstants\Shaders\Uber.frag" />
+    <Shader Include="SpecializationConstants\Shaders\Uber.vert" />
+    <Shader Include="StencilBuffer\Outline\StencilN.vert" />
+    <Shader Include="StencilBuffer\Shaders\outline.frag" />
+    <Shader Include="StencilBuffer\Shaders\outline.vert" />
+    <Shader Include="StencilBuffer\Shaders\quad.frag" />
+    <Shader Include="StencilBuffer\Shaders\quad.vert" />
+    <Shader Include="StencilBuffer\Shaders\SceneN.frag" />
+    <Shader Include="StencilBuffer\Shaders\SceneN.vert" />
+    <Shader Include="StencilBuffer\Shaders\Stencil.vert" />
+    <Shader Include="StencilBuffer\Stencil\ReadAttach.frag" />
+    <Shader Include="StencilBuffer\Stencil\ReadAttach.vert" />
+    <Shader Include="SubPasses\Shaders\Composition.frag" />
+    <Shader Include="SubPasses\Shaders\Composition.vert" />
+    <Shader Include="SubPasses\Shaders\CompositionSpot.frag" />
+    <Shader Include="SubPasses\Shaders\GBuffer.frag" />
+    <Shader Include="SubPasses\Shaders\GBufferDraw.frag" />
+    <Shader Include="SubPasses\Shaders\GBufferGlass.frag" />
+    <Shader Include="SubPasses\Shaders\GBufferLit.frag" />
+    <Shader Include="SubPasses\Shaders\GBufReadAttach.frag" />
+    <Shader Include="SubPasses\Shaders\GBufReadAttach.vert" />
+    <Shader Include="SubPasses\Shaders\glass.frag" />
+    <Shader Include="SubPasses\Shaders\glass.vert" />
+    <Shader Include="SubPasses\Shaders\glassDepth.frag" />
+    <Shader Include="SubPasses\Shaders\glassScene.frag" />
+    <Shader Include="SubPasses\Shaders\glassScene.vert" />
+    <Shader Include="SubPasses\Shaders\SpScene.frag" />
+    <Shader Include="SubPasses\Shaders\SpScene.vert" />
+    <Shader Include="SubPasses\Shaders\TestReadBuffers.frag" />
+    <Shader Include="TextureArray\Shaders\Instancing.vert" />
+    <Shader Include="TextureArray\Shaders\SamplerArray.frag" />
+    <Shader Include="TextureArray\Shaders\SamplerArray.vert" />
+    <Shader Include="TextureArray\Shaders\TextureArray.frag" />
+    <Shader Include="TextureArray\Shaders\TextureArray.vert" />
+    <Shader Include="Texture\Shaders\LoD.frag" />
+    <Shader Include="Texture\Shaders\Shield.frag" />
+    <Shader Include="Texture\Shaders\Texture.vert" />
+    <Shader Include="Triangle\3d\Triangle3d.frag" />
+    <Shader Include="Triangle\3d\Triangle3d.vert" />
+    <Shader Include="Triangle\Light\TriangleLight.frag" />
+    <Shader Include="Triangle\Light\TriangleLight.vert" />
+    <Shader Include="Triangle\Simple\TriangleSimple.frag" />
+    <Shader Include="Triangle\Simple\TriangleSimple.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AppGroups.h" />
+    <ClInclude Include="Basics.h" />
+    <ClInclude Include="Particles\ParticleSystem.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Basics.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

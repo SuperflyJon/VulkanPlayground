@@ -1,0 +1,877 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Triangle">
+      <UniqueIdentifier>{9495e884-5c45-4976-bbc8-94fd995c03a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Triangle\Simple">
+      <UniqueIdentifier>{dc16ea85-e78a-4c52-8f4b-0b164adc927b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Triangle\3d">
+      <UniqueIdentifier>{31313eb1-8019-4beb-83c1-af3d10b21f11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipelines">
+      <UniqueIdentifier>{ef4d9b85-97c0-4311-9a88-6a2bd7ab6007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipelines\Scene1">
+      <UniqueIdentifier>{be16185f-6ac6-45fd-ac8e-6e1dfcaf79ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipelines\Scene2">
+      <UniqueIdentifier>{014c83ad-4f16-41ef-9bb5-6165d7e2d065}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipelines\Scene3">
+      <UniqueIdentifier>{4f4db6ae-a90c-49a0-8dd1-838f2a314994}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipelines\Multiple">
+      <UniqueIdentifier>{df4f65de-188f-4d56-ac63-4735f0fb6e10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipelines\DynamicViewports">
+      <UniqueIdentifier>{5feab68a-bf7c-442c-a854-2fc5e47e4c7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pipelines\MultipleDerived">
+      <UniqueIdentifier>{bca4f2a4-ec9b-4fe9-b486-eadb937199f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InputAttachments">
+      <UniqueIdentifier>{f357ba26-d0f4-4871-a0d9-ad641ea2eb3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InputAttachments\Depth">
+      <UniqueIdentifier>{6bd285d8-56c6-4200-8a04-1006e85c65f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InputAttachments\Scene">
+      <UniqueIdentifier>{bb60d024-5149-43da-acd9-6cce026fcb8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="InputAttachments\Multipass">
+      <UniqueIdentifier>{4a1834f9-23d1-4bc7-bfe4-cd38a055dee5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DescriptorSets">
+      <UniqueIdentifier>{00016630-a52b-4aa5-b3e1-208a82eb8cc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DescriptorSets\Cube1">
+      <UniqueIdentifier>{e2ef6bfd-5769-4bdc-8f57-d20fba01e017}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DescriptorSets\Cube2">
+      <UniqueIdentifier>{aa9f6156-85c9-4e37-8709-7a8a0330ad06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DescriptorSets\TwoCubes">
+      <UniqueIdentifier>{8f9e1ce4-59ab-4d1a-af75-5e0e1cf736cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DescriptorSets\Shaders">
+      <UniqueIdentifier>{978c5489-ac31-486d-91b1-8d69be13804e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DescriptorSets\LitCubes">
+      <UniqueIdentifier>{fc6ecdcd-62ce-4c70-9389-95c7b7090f2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DynamicUniformBuffer">
+      <UniqueIdentifier>{5b45c135-8564-413c-9cbc-3cb103152b06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DynamicUniformBuffer\MultipleCubes">
+      <UniqueIdentifier>{2bd4415d-eb3e-48e5-8271-dc8796fd74a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DynamicUniformBuffer\CubeOfCubes">
+      <UniqueIdentifier>{6863700a-e717-4fe1-bb04-e5b75897d106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DynamicUniformBuffer\SpinningCubes">
+      <UniqueIdentifier>{6bbf874d-2399-4523-aab1-569c582213bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DynamicUniformBuffer\LitCubes">
+      <UniqueIdentifier>{393e55ad-6187-4431-afab-7385fe913641}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PushConstants">
+      <UniqueIdentifier>{27a06ad8-8e23-4f68-a0a3-54f703183b25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PushConstants\Model">
+      <UniqueIdentifier>{d2645e31-d8de-4058-8a96-14a6fa621df8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PushConstants\UniformSpot">
+      <UniqueIdentifier>{f6176e65-c71d-4dea-bc1b-122d431f156d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PushConstants\PushConstantSpot">
+      <UniqueIdentifier>{952fbbb7-f348-4211-b8c2-3810786c011b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PushConstants\MultiSpot">
+      <UniqueIdentifier>{96c693db-a641-44c2-8171-2e39bd89678f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PushConstants\Cubes">
+      <UniqueIdentifier>{5a85a16f-d587-4234-b303-c21f74a4007c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SpecializationConstants">
+      <UniqueIdentifier>{e423d829-01ca-4ec5-8a2a-c3d91311e9e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SpecializationConstants\Scene1">
+      <UniqueIdentifier>{61d0f0ae-7526-42d4-bbc9-f2af132a7a3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SpecializationConstants\Scene2">
+      <UniqueIdentifier>{3935cb60-d172-4811-805b-eb3f981015da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SpecializationConstants\Scene3">
+      <UniqueIdentifier>{7e101994-88bd-4606-944d-09c9c454dfcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SpecializationConstants\MultipleScenes">
+      <UniqueIdentifier>{630bfdd7-a946-45db-9883-9e69d3583b5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SpecializationConstants\UberShader">
+      <UniqueIdentifier>{cfdc9a48-7080-4edf-97eb-f9061dd446fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SpecializationConstants\UberShaderSingle">
+      <UniqueIdentifier>{c50c4f31-8f00-45c0-8979-ba2d139d89e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texture">
+      <UniqueIdentifier>{72812438-46d6-40a6-b11b-83569b969c46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texture\Shield">
+      <UniqueIdentifier>{f926ea83-e90d-4f06-b931-8c7e225d3d20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texture\LoD">
+      <UniqueIdentifier>{1176c1c5-c010-4c0e-b20d-45d13c055429}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Texture\LoDTest">
+      <UniqueIdentifier>{7c0a6c30-5310-4ba4-9e3e-b47e284445a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap">
+      <UniqueIdentifier>{67e9567f-1d44-48d6-a9dc-7bfca84b1702}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap\TextureArray">
+      <UniqueIdentifier>{7b163db7-c757-47e4-aa37-8b65be9171a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap\Unboxed">
+      <UniqueIdentifier>{d3f337bb-6088-411b-ac73-82f8c2e3ec84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap\CubeMap">
+      <UniqueIdentifier>{3294bd1d-c0d1-4f5b-acd7-171a06dae5da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap\Boxed">
+      <UniqueIdentifier>{bda6e4bc-89ff-4f86-beb7-f06c0b55751f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap\Models">
+      <UniqueIdentifier>{5abe0ae9-c6ab-4362-8c99-28e5e4e44442}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap\ReflectModels">
+      <UniqueIdentifier>{487c140e-653f-4032-9d27-fb3eb2979af5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CubeMap\CubeMapPlusModels">
+      <UniqueIdentifier>{0e91af01-1060-47e7-8085-33df9eae3999}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TextureArray">
+      <UniqueIdentifier>{d3e75908-d1ab-4fc2-ac42-1cac76e9dfa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TextureArray\TextureArray">
+      <UniqueIdentifier>{c16b6d30-33b5-4c26-bde6-cb6af3eaa19d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TextureArray\Instancing">
+      <UniqueIdentifier>{0b7c831d-7dba-4ac6-9e9f-a491722f9ee4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TextureArray\SamplerArray">
+      <UniqueIdentifier>{4652b002-bbee-4f12-a4ae-f10732eb1d5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3dTextures">
+      <UniqueIdentifier>{c00b8f42-f17e-4b40-9c48-b2913baf352f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3dTextures\SamplerArrayQuads">
+      <UniqueIdentifier>{aa663a06-937a-4b7a-a01f-0e93f516f87b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3dTextures\SamplerArrayMoreQuads">
+      <UniqueIdentifier>{c0d013f5-2386-466d-9fb7-5d5aaf7116b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3dTextures\MoreQuads3d">
+      <UniqueIdentifier>{7ef9c189-b47b-4360-9eb7-ff0590f8ca9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3dTextures\Noise3d">
+      <UniqueIdentifier>{4c241254-a1fa-4170-9382-2ff072306bf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{284448b0-30a2-4dd1-9c44-a732a92eef82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\TestModel">
+      <UniqueIdentifier>{d8bdb133-aa2e-4087-a67d-c8be93e91d13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\TestMesh">
+      <UniqueIdentifier>{e66a7bb3-5692-4b0f-8997-104d82ff7f1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\LitTestMesh">
+      <UniqueIdentifier>{882a6b3b-f24d-4059-b9be-3fd1be7fc1d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SubPasses">
+      <UniqueIdentifier>{2e61cbdb-2b95-4e93-892f-bfc1a830216c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SubPasses\Scene">
+      <UniqueIdentifier>{6b0282cb-2ac1-4f71-b9e9-81997100c86e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SubPasses\GBuffer">
+      <UniqueIdentifier>{6f2a1e34-732f-4b9b-9d60-04d6a61e7f46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SubPasses\GBufferDraw">
+      <UniqueIdentifier>{8ec8a44a-6649-425f-a71e-b23d3d70e791}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SubPasses\GBufferGlass">
+      <UniqueIdentifier>{b7b2e7cf-93b7-40f8-9183-0dd52ab26006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SubPasses\GBufferLit">
+      <UniqueIdentifier>{6c06d22d-895a-4fb5-841b-edcca90f2d19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Offscreen">
+      <UniqueIdentifier>{91d33924-943e-40bb-8d00-f7ab728b3e24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Offscreen\Offscreen">
+      <UniqueIdentifier>{cde8e381-205f-438e-b946-4936195442c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Offscreen\Reflect">
+      <UniqueIdentifier>{57688de7-da8e-438d-8c77-777ff87856e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Offscreen\Scene">
+      <UniqueIdentifier>{be10140b-9a74-49a8-bcc2-84cf0cf31246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles">
+      <UniqueIdentifier>{14272bab-200b-49b7-985e-9ab398ecd369}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles\Combined">
+      <UniqueIdentifier>{0222b28d-aa10-47f4-9d1e-e68c01c431bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles\Fire">
+      <UniqueIdentifier>{de1f5fa5-08fb-48aa-8c1c-91d322663d98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles\Flame">
+      <UniqueIdentifier>{afd56f19-8c65-4963-a276-2ec72dc3007c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles\NormalMap">
+      <UniqueIdentifier>{76147abe-bf1e-4011-b6d2-9309dbaf407f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles\Smoke">
+      <UniqueIdentifier>{e9b4e425-d72c-44ba-a1a1-967512d99670}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StencilBuffer">
+      <UniqueIdentifier>{e25390dd-44d7-4b22-a21d-d5a3d2d55d47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StencilBuffer\CutOut">
+      <UniqueIdentifier>{642b673b-d027-40ef-978e-395e1cc8d4c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StencilBuffer\Highlight">
+      <UniqueIdentifier>{ad6106f5-5a2d-4cb8-ac30-1038fc607cd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StencilBuffer\Obscured">
+      <UniqueIdentifier>{3d5f1c48-1930-43a6-b2eb-d25950e5f1c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StencilBuffer\Outline">
+      <UniqueIdentifier>{babaa7c1-87c1-4f73-b354-c39a49d257ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StencilBuffer\Scene">
+      <UniqueIdentifier>{8a1d888c-f398-4b4a-87d9-87b0b47f9973}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="StencilBuffer\Stencil">
+      <UniqueIdentifier>{865c3745-7a87-457b-9218-0c44fb8f24b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Triangle\Light">
+      <UniqueIdentifier>{d2629b10-ea28-4646-96c4-5b111c22f907}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="%40Project Files">
+      <UniqueIdentifier>{28ff49d4-e137-423f-898e-816c2bf7aa7c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Triangle\Simple\TriangleSimple.cpp">
+      <Filter>Triangle\Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle\3d\Triangle3d.cpp">
+      <Filter>Triangle\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipelines\Scene2\PipelinesScene2.cpp">
+      <Filter>Pipelines\Scene2</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipelines\Scene1\PipelinesScene1.cpp">
+      <Filter>Pipelines\Scene1</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipelines\Scene3\PipelinesScene3.cpp">
+      <Filter>Pipelines\Scene3</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipelines\Multiple\PipelinesMultiple.cpp">
+      <Filter>Pipelines\Multiple</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipelines\DynamicViewports\PipelinesDynamicViewports.cpp">
+      <Filter>Pipelines\DynamicViewports</Filter>
+    </ClCompile>
+    <ClCompile Include="Pipelines\MultipleDerived\PipelinesMultipleDerived.cpp">
+      <Filter>Pipelines\MultipleDerived</Filter>
+    </ClCompile>
+    <ClCompile Include="InputAttachments\Depth\InputAttachmentsDepth.cpp">
+      <Filter>InputAttachments\Depth</Filter>
+    </ClCompile>
+    <ClCompile Include="InputAttachments\Scene\InputAttachmentsScene.cpp">
+      <Filter>InputAttachments\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="InputAttachments\Multipass\InputAttachmentsMultiPass.cpp">
+      <Filter>InputAttachments\Multipass</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorSets\Cube1\DescriptorSetsCube1.cpp">
+      <Filter>DescriptorSets\Cube1</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorSets\Cube2\DescriptorSetsCube2.cpp">
+      <Filter>DescriptorSets\Cube2</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorSets\TwoCubes\DescriptorSetsTwoCubes.cpp">
+      <Filter>DescriptorSets\TwoCubes</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorSets\LitCubes\DescriptorSetsLitCubes.cpp">
+      <Filter>DescriptorSets\LitCubes</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicUniformBuffer\MultipleCubes\DynamicUniformBufferMultipleCubes.cpp">
+      <Filter>DynamicUniformBuffer\MultipleCubes</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicUniformBuffer\CubeOfCubes\DynamicUniformBufferCubeOfCubes.cpp">
+      <Filter>DynamicUniformBuffer\CubeOfCubes</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicUniformBuffer\SpinningCubes\DynamicUniformBufferSpinningCubes.cpp">
+      <Filter>DynamicUniformBuffer\SpinningCubes</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicUniformBuffer\LitCubes\DynamicUniformBufferLitCubes.cpp">
+      <Filter>DynamicUniformBuffer\LitCubes</Filter>
+    </ClCompile>
+    <ClCompile Include="PushConstants\Model\PushConstantsModel.cpp">
+      <Filter>PushConstants\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="PushConstants\UniformSpot\PushConstantsUniformSpot.cpp">
+      <Filter>PushConstants\UniformSpot</Filter>
+    </ClCompile>
+    <ClCompile Include="PushConstants\PushConstantSpot\PushConstantPushConstantSpot.cpp">
+      <Filter>PushConstants\PushConstantSpot</Filter>
+    </ClCompile>
+    <ClCompile Include="PushConstants\MultiSpot\PushConstantMultiSpot.cpp">
+      <Filter>PushConstants\MultiSpot</Filter>
+    </ClCompile>
+    <ClCompile Include="PushConstants\Cubes\PushConstantsCubes.cpp">
+      <Filter>PushConstants\Cubes</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecializationConstants\Scene1\SpecializationConstantsScene1.cpp">
+      <Filter>SpecializationConstants\Scene1</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecializationConstants\Scene2\SpecializationConstantsScene2.cpp">
+      <Filter>SpecializationConstants\Scene2</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecializationConstants\Scene3\SpecializationConstantsScene3.cpp">
+      <Filter>SpecializationConstants\Scene3</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecializationConstants\MultipleScenes\SpecializationConstantsMultipleScenes.cpp">
+      <Filter>SpecializationConstants\MultipleScenes</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecializationConstants\UberShader\SpecializationConstantsUberShader.cpp">
+      <Filter>SpecializationConstants\UberShader</Filter>
+    </ClCompile>
+    <ClCompile Include="SpecializationConstants\UberShaderSingle\SpecializationConstantsUberShaderSingle.cpp">
+      <Filter>SpecializationConstants\UberShaderSingle</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\Shield\TextureShield.cpp">
+      <Filter>Texture\Shield</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\LoD\TextureLoD.cpp">
+      <Filter>Texture\LoD</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture\LoDTest\TextureLoDTest.cpp">
+      <Filter>Texture\LoDTest</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap\TextureArray\CubeMapTextureArray.cpp">
+      <Filter>CubeMap\TextureArray</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap\Unboxed\CubeMapUnboxed.cpp">
+      <Filter>CubeMap\Unboxed</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap\CubeMap\CubeMapCubeMap.cpp">
+      <Filter>CubeMap\CubeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap\Boxed\CubeMapBoxed.cpp">
+      <Filter>CubeMap\Boxed</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap\Models\CubeMapModels.cpp">
+      <Filter>CubeMap\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap\ReflectModels\CubeMapReflectModels.cpp">
+      <Filter>CubeMap\ReflectModels</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap\CubeMapPlusModels\CubeMapPlusModels.cpp">
+      <Filter>CubeMap\CubeMapPlusModels</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureArray\TextureArray\TextureArrayTextureArray.cpp">
+      <Filter>TextureArray\TextureArray</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureArray\Instancing\TextureArrayInstancing.cpp">
+      <Filter>TextureArray\Instancing</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureArray\SamplerArray\TextureArraySamplerArray.cpp">
+      <Filter>TextureArray\SamplerArray</Filter>
+    </ClCompile>
+    <ClCompile Include="3dTextures\SamplerArrayQuads\3dTexturesSamplerArrayQuads.cpp">
+      <Filter>3dTextures\SamplerArrayQuads</Filter>
+    </ClCompile>
+    <ClCompile Include="3dTextures\SamplerArrayMoreQuads\3dTexturesSamplerArrayMoreQuads.cpp">
+      <Filter>3dTextures\SamplerArrayMoreQuads</Filter>
+    </ClCompile>
+    <ClCompile Include="3dTextures\MoreQuads3d\3dTexturesMoreQuads3d.cpp">
+      <Filter>3dTextures\MoreQuads3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3dTextures\Noise3d\3dTexturesNoise3d.cpp">
+      <Filter>3dTextures\Noise3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3dTextures\Noise3d\NoiseGenerator.cpp">
+      <Filter>3dTextures\Noise3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\TestModel\ModelTestModel.cpp">
+      <Filter>Model\TestModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\TestMesh\ModelTestMesh.cpp">
+      <Filter>Model\TestMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Model\LitTestMesh\ModelLitTestMesh.cpp">
+      <Filter>Model\LitTestMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="SubPasses\Scene\SubPassesScene.cpp">
+      <Filter>SubPasses\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="SubPasses\GBuffer\SubPassesGBuffer.cpp">
+      <Filter>SubPasses\GBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="SubPasses\GBufferDraw\SubPassesGBufferDraw.cpp">
+      <Filter>SubPasses\GBufferDraw</Filter>
+    </ClCompile>
+    <ClCompile Include="SubPasses\GBufferGlass\SubPassesGBufferGlass.cpp">
+      <Filter>SubPasses\GBufferGlass</Filter>
+    </ClCompile>
+    <ClCompile Include="SubPasses\GBufferLit\SubPassesGBufferLit.cpp">
+      <Filter>SubPasses\GBufferLit</Filter>
+    </ClCompile>
+    <ClCompile Include="Offscreen\Offscreen\OffscreenOffscreen.cpp">
+      <Filter>Offscreen\Offscreen</Filter>
+    </ClCompile>
+    <ClCompile Include="Offscreen\Reflect\OffscreenReflect.cpp">
+      <Filter>Offscreen\Reflect</Filter>
+    </ClCompile>
+    <ClCompile Include="Offscreen\Scene\OffscreenScene.cpp">
+      <Filter>Offscreen\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Particles\Combined\ParticlesCombined.cpp">
+      <Filter>Particles\Combined</Filter>
+    </ClCompile>
+    <ClCompile Include="Particles\Fire\ParticlesFire.cpp">
+      <Filter>Particles\Fire</Filter>
+    </ClCompile>
+    <ClCompile Include="Particles\Flame\ParticlesFlame.cpp">
+      <Filter>Particles\Flame</Filter>
+    </ClCompile>
+    <ClCompile Include="Particles\Smoke\ParticlesSmoke.cpp">
+      <Filter>Particles\Smoke</Filter>
+    </ClCompile>
+    <ClCompile Include="Particles\NormalMap\ParticlesNormalMap.cpp">
+      <Filter>Particles\NormalMap</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilBuffer\CutOut\StencilBufferCutOut.cpp">
+      <Filter>StencilBuffer\CutOut</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilBuffer\Highlight\StencilBufferHighlight.cpp">
+      <Filter>StencilBuffer\Highlight</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilBuffer\Scene\StencilBufferScene.cpp">
+      <Filter>StencilBuffer\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilBuffer\Outline\StencilBufferOutline.cpp">
+      <Filter>StencilBuffer\Outline</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilBuffer\Obscured\StencilBufferObscured.cpp">
+      <Filter>StencilBuffer\Obscured</Filter>
+    </ClCompile>
+    <ClCompile Include="StencilBuffer\Stencil\StencilBufferStencil.cpp">
+      <Filter>StencilBuffer\Stencil</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle\Light\TriangleLight.cpp">
+      <Filter>Triangle\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="AppGroups.cpp">
+      <Filter>%40Project Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Basics.cpp">
+      <Filter>%40Project Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>%40Project Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Shader Include="Triangle\Simple\TriangleSimple.frag">
+      <Filter>Triangle\Simple</Filter>
+    </Shader>
+    <Shader Include="Triangle\Simple\TriangleSimple.vert">
+      <Filter>Triangle\Simple</Filter>
+    </Shader>
+    <Shader Include="Triangle\3d\Triangle3d.frag">
+      <Filter>Triangle\3d</Filter>
+    </Shader>
+    <Shader Include="Triangle\3d\Triangle3d.vert">
+      <Filter>Triangle\3d</Filter>
+    </Shader>
+    <Shader Include="Pipelines\Shaders\PipelinesScene1.frag">
+      <Filter>Pipelines\Scene1</Filter>
+    </Shader>
+    <Shader Include="Pipelines\Shaders\PipelinesScene1.vert">
+      <Filter>Pipelines\Scene1</Filter>
+    </Shader>
+    <Shader Include="Pipelines\Shaders\PipelinesScene2.frag">
+      <Filter>Pipelines\Scene2</Filter>
+    </Shader>
+    <Shader Include="Pipelines\Shaders\PipelinesScene2.vert">
+      <Filter>Pipelines\Scene2</Filter>
+    </Shader>
+    <Shader Include="Pipelines\Shaders\PipelinesScene3.frag">
+      <Filter>Pipelines\Scene3</Filter>
+    </Shader>
+    <Shader Include="Pipelines\Shaders\PipelinesScene3.vert">
+      <Filter>Pipelines\Scene3</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Depth\Depth.vert">
+      <Filter>InputAttachments\Depth</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Scene\Scene.frag">
+      <Filter>InputAttachments\Scene</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Scene\Scene.vert">
+      <Filter>InputAttachments\Scene</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Multipass\MultiReadAttach.frag">
+      <Filter>InputAttachments\Multipass</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Multipass\MultiReadAttach.vert">
+      <Filter>InputAttachments\Multipass</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Multipass\Scene.frag">
+      <Filter>InputAttachments\Multipass</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Multipass\Scene.vert">
+      <Filter>InputAttachments\Multipass</Filter>
+    </Shader>
+    <Shader Include="DescriptorSets\shaders\cube.frag">
+      <Filter>DescriptorSets\Shaders</Filter>
+    </Shader>
+    <Shader Include="DescriptorSets\shaders\cube.vert">
+      <Filter>DescriptorSets\Shaders</Filter>
+    </Shader>
+    <Shader Include="DescriptorSets\shaders\cubelit.frag">
+      <Filter>DescriptorSets\Shaders</Filter>
+    </Shader>
+    <Shader Include="DescriptorSets\shaders\cubelit.vert">
+      <Filter>DescriptorSets\Shaders</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\MultipleCubes\cube.frag">
+      <Filter>DynamicUniformBuffer\MultipleCubes</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\MultipleCubes\cube.vert">
+      <Filter>DynamicUniformBuffer\MultipleCubes</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\CubeOfCubes\cubeDynUbo.frag">
+      <Filter>DynamicUniformBuffer\CubeOfCubes</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\CubeOfCubes\cubeDynUbo.vert">
+      <Filter>DynamicUniformBuffer\CubeOfCubes</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\SpinningCubes\cubeDynUboSpin.frag">
+      <Filter>DynamicUniformBuffer\SpinningCubes</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\SpinningCubes\cubeDynUboSpin.vert">
+      <Filter>DynamicUniformBuffer\SpinningCubes</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\LitCubes\cubeDynUboLit.vert">
+      <Filter>DynamicUniformBuffer\LitCubes</Filter>
+    </Shader>
+    <Shader Include="DynamicUniformBuffer\LitCubes\cubeDynUboLit.frag">
+      <Filter>DynamicUniformBuffer\LitCubes</Filter>
+    </Shader>
+    <Shader Include="PushConstants\Shaders\SampleModel.frag">
+      <Filter>PushConstants\Model</Filter>
+    </Shader>
+    <Shader Include="PushConstants\Shaders\SampleModel.vert">
+      <Filter>PushConstants\Model</Filter>
+    </Shader>
+    <Shader Include="PushConstants\Shaders\UniformSpot.frag">
+      <Filter>PushConstants\UniformSpot</Filter>
+    </Shader>
+    <Shader Include="PushConstants\Shaders\PushConstantSpot.frag">
+      <Filter>PushConstants\PushConstantSpot</Filter>
+    </Shader>
+    <Shader Include="PushConstants\Shaders\MultiSpot.frag">
+      <Filter>PushConstants\MultiSpot</Filter>
+    </Shader>
+    <Shader Include="PushConstants\Cubes\cubePCLit.frag">
+      <Filter>PushConstants\Cubes</Filter>
+    </Shader>
+    <Shader Include="PushConstants\Cubes\cubePCLit.vert">
+      <Filter>PushConstants\Cubes</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\ScScene1.frag">
+      <Filter>SpecializationConstants\Scene1</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\ScScene1.vert">
+      <Filter>SpecializationConstants\Scene1</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\ScScene2.frag">
+      <Filter>SpecializationConstants\Scene2</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\ScScene2.vert">
+      <Filter>SpecializationConstants\Scene2</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\ScScene3.frag">
+      <Filter>SpecializationConstants\Scene3</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\ScScene3.vert">
+      <Filter>SpecializationConstants\Scene3</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\Uber.frag">
+      <Filter>SpecializationConstants\UberShader</Filter>
+    </Shader>
+    <Shader Include="SpecializationConstants\Shaders\Uber.vert">
+      <Filter>SpecializationConstants\UberShader</Filter>
+    </Shader>
+    <Shader Include="Texture\Shaders\Shield.frag">
+      <Filter>Texture\Shield</Filter>
+    </Shader>
+    <Shader Include="Texture\Shaders\Texture.vert">
+      <Filter>Texture</Filter>
+    </Shader>
+    <Shader Include="Texture\Shaders\LoD.frag">
+      <Filter>Texture\LoD</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\TextureArray.frag">
+      <Filter>CubeMap\TextureArray</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\TextureArray.vert">
+      <Filter>CubeMap\TextureArray</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\CubeMap.frag">
+      <Filter>CubeMap\CubeMap</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\CubeMap.vert">
+      <Filter>CubeMap\CubeMap</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\Models.frag">
+      <Filter>CubeMap\Models</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\Models.vert">
+      <Filter>CubeMap\Models</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\ReflectModels.frag">
+      <Filter>CubeMap\ReflectModels</Filter>
+    </Shader>
+    <Shader Include="CubeMap\Shaders\ReflectModels.vert">
+      <Filter>CubeMap\ReflectModels</Filter>
+    </Shader>
+    <Shader Include="TextureArray\Shaders\Instancing.vert">
+      <Filter>TextureArray\Instancing</Filter>
+    </Shader>
+    <Shader Include="TextureArray\Shaders\TextureArray.frag">
+      <Filter>TextureArray\TextureArray</Filter>
+    </Shader>
+    <Shader Include="TextureArray\Shaders\TextureArray.vert">
+      <Filter>TextureArray\TextureArray</Filter>
+    </Shader>
+    <Shader Include="TextureArray\Shaders\SamplerArray.frag">
+      <Filter>TextureArray\SamplerArray</Filter>
+    </Shader>
+    <Shader Include="TextureArray\Shaders\SamplerArray.vert">
+      <Filter>TextureArray\SamplerArray</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\SamplerArrayQuads.frag">
+      <Filter>3dTextures\SamplerArrayQuads</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\SamplerArrayQuads.vert">
+      <Filter>3dTextures\SamplerArrayQuads</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\SamplerArrayMoreQuads.frag">
+      <Filter>3dTextures\SamplerArrayMoreQuads</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\SamplerArrayMoreQuads.vert">
+      <Filter>3dTextures\SamplerArrayMoreQuads</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\MoreQuads3d.frag">
+      <Filter>3dTextures\MoreQuads3d</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\MoreQuads3d.vert">
+      <Filter>3dTextures\MoreQuads3d</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\Noise3d.frag">
+      <Filter>3dTextures\Noise3d</Filter>
+    </Shader>
+    <Shader Include="3dTextures\Shaders\Noise3d.vert">
+      <Filter>3dTextures\Noise3d</Filter>
+    </Shader>
+    <Shader Include="Model\Shaders\Model.frag">
+      <Filter>Model</Filter>
+    </Shader>
+    <Shader Include="Model\Shaders\Model.vert">
+      <Filter>Model</Filter>
+    </Shader>
+    <Shader Include="Model\Shaders\LitTestMesh.vert">
+      <Filter>Model\LitTestMesh</Filter>
+    </Shader>
+    <Shader Include="Model\Shaders\LitTestMesh.frag">
+      <Filter>Model\LitTestMesh</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Depth\ReadDepthAttach.frag">
+      <Filter>InputAttachments\Depth</Filter>
+    </Shader>
+    <Shader Include="InputAttachments\Depth\ReadDepthAttach.vert">
+      <Filter>InputAttachments\Depth</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\GBuffer.frag">
+      <Filter>SubPasses\GBuffer</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\SpScene.vert">
+      <Filter>SubPasses\GBuffer</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\Composition.frag">
+      <Filter>SubPasses\GBufferDraw</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\Composition.vert">
+      <Filter>SubPasses\GBufferDraw</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\GBufferDraw.frag">
+      <Filter>SubPasses\GBufferDraw</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\glassScene.frag">
+      <Filter>SubPasses\Scene</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\glassScene.vert">
+      <Filter>SubPasses\Scene</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\SpScene.frag">
+      <Filter>SubPasses\Scene</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\GBufferGlass.frag">
+      <Filter>SubPasses\GBufferGlass</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\glass.frag">
+      <Filter>SubPasses\GBufferGlass</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\glass.vert">
+      <Filter>SubPasses\GBufferGlass</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\CompositionSpot.frag">
+      <Filter>SubPasses\GBufferLit</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\GBufferLit.frag">
+      <Filter>SubPasses\GBufferLit</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\glassDepth.frag">
+      <Filter>SubPasses\GBufferLit</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\Test.frag">
+      <Filter>Offscreen\Offscreen</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\Test.vert">
+      <Filter>Offscreen\Offscreen</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\Reflect.frag">
+      <Filter>Offscreen\Reflect</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\Reflect.vert">
+      <Filter>Offscreen\Reflect</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\OffScene.frag">
+      <Filter>Offscreen\Scene</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\OffScene.vert">
+      <Filter>Offscreen\Scene</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\quad.frag">
+      <Filter>Offscreen\Scene</Filter>
+    </Shader>
+    <Shader Include="Offscreen\Shaders\quad.vert">
+      <Filter>Offscreen\Scene</Filter>
+    </Shader>
+    <Shader Include="Particles\Shaders\Particles.vert">
+      <Filter>Particles</Filter>
+    </Shader>
+    <Shader Include="Particles\Combined\NormalMap.frag">
+      <Filter>Particles\Combined</Filter>
+    </Shader>
+    <Shader Include="Particles\Combined\NormalMap.vert">
+      <Filter>Particles\Combined</Filter>
+    </Shader>
+    <Shader Include="Particles\Flame\Flame.frag">
+      <Filter>Particles\Flame</Filter>
+    </Shader>
+    <Shader Include="Particles\Smoke\Smoke.frag">
+      <Filter>Particles\Smoke</Filter>
+    </Shader>
+    <Shader Include="Particles\NormalMap\NormalMapTest.frag">
+      <Filter>Particles\NormalMap</Filter>
+    </Shader>
+    <Shader Include="Particles\NormalMap\NormalMapTest.vert">
+      <Filter>Particles\NormalMap</Filter>
+    </Shader>
+    <Shader Include="Particles\Shaders\TestTexture.vert">
+      <Filter>Particles</Filter>
+    </Shader>
+    <Shader Include="Particles\Shaders\TestTexture.frag">
+      <Filter>Particles</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\TestReadBuffers.frag">
+      <Filter>SubPasses\GBufferDraw</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Outline\StencilN.vert">
+      <Filter>StencilBuffer\Outline</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Stencil\ReadAttach.frag">
+      <Filter>StencilBuffer\Stencil</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Stencil\ReadAttach.vert">
+      <Filter>StencilBuffer\Stencil</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Shaders\quad.frag">
+      <Filter>StencilBuffer</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Shaders\quad.vert">
+      <Filter>StencilBuffer</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Shaders\Stencil.vert">
+      <Filter>StencilBuffer</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Shaders\outline.frag">
+      <Filter>StencilBuffer</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Shaders\outline.vert">
+      <Filter>StencilBuffer</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Shaders\SceneN.vert">
+      <Filter>StencilBuffer</Filter>
+    </Shader>
+    <Shader Include="StencilBuffer\Shaders\SceneN.frag">
+      <Filter>StencilBuffer</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\GBufReadAttach.frag">
+      <Filter>SubPasses\GBuffer</Filter>
+    </Shader>
+    <Shader Include="SubPasses\Shaders\GBufReadAttach.vert">
+      <Filter>SubPasses\GBuffer</Filter>
+    </Shader>
+    <Shader Include="Particles\Shaders\Fire.frag">
+      <Filter>Particles\Fire</Filter>
+    </Shader>
+    <Shader Include="Triangle\Light\TriangleLight.frag">
+      <Filter>Triangle\Light</Filter>
+    </Shader>
+    <Shader Include="Triangle\Light\TriangleLight.vert">
+      <Filter>Triangle\Light</Filter>
+    </Shader>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Particles\ParticleSystem.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="AppGroups.h">
+      <Filter>%40Project Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>%40Project Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Basics.h">
+      <Filter>%40Project Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Basics.rc">
+      <Filter>%40Project Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

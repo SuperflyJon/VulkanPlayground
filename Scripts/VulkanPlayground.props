@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(ShaderBeforeTargets)' == '' and '$(ShaderAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <ShaderBeforeTargets>Midl</ShaderBeforeTargets>
+    <ShaderAfterTargets>CustomBuild</ShaderAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ShaderDependsOn Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(ShaderDependsOn)</ShaderDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Shader>
+      <OutputFile>$(IntDir)../../%(Filename)%(Extension).spv</OutputFile>
+      <CommandLineTemplate>powershell -command "$(MSBuildThisFileDirectory)runGlslCheck.ps1" \"%(FullPath)\" \"%(OutputFile)\"</CommandLineTemplate>
+      <Outputs>%(OutputFile);</Outputs>
+      <ExecutionDescription>Process "%(Filename)%(Extension)" Shader file</ExecutionDescription>
+    </Shader>
+  </ItemDefinitionGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="External.props" />
+  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="shader.targets" />
+  </ImportGroup>
+</Project>

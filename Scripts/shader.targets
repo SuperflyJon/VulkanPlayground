@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)shader.xml" />
+    <AvailableItemName Include="Shader">
+      <Targets>ShaderTarget</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask TaskName="Shader" TaskFactory="XamlTaskFactory" AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)shader.xml</Task>
+  </UsingTask>
+  
+  <Target Name="_WriteShaderTlogs" Condition="'@(Shader)' != '' and '@(SelectedFiles)' == ''">
+    <ItemGroup>
+      <_ShaderReadTlog Include="^%(Shader.FullPath);%(Shader.AdditionalDependencies)"  Condition="'%(Shader.ExcludedFromBuild)' != 'true' and '%(Shader.OutputFile)' != ''"/>
+      <_ShaderWriteTlog Include="^%(Shader.FullPath);$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '%(Shader.OutputFile)'))" Condition="'%(Shader.ExcludedFromBuild)' != 'true' and '%(Shader.OutputFile)' != ''"/>
+    </ItemGroup>
+    <WriteLinesToFile Condition="'@(_ShaderReadTlog)' != ''" File="$(TLogLocation)Shader.read.1u.tlog" Lines="@(_ShaderReadTlog->MetaData('Identity')->ToUpperInvariant());" Overwrite="true" Encoding="Unicode"/>
+    <WriteLinesToFile Condition="'@(_ShaderWriteTlog)' != ''" File="$(TLogLocation)Shader.write.1u.tlog" Lines="@(_ShaderWriteTlog->MetaData('Identity')->ToUpperInvariant());" Overwrite="true" Encoding="Unicode"/>
+  </Target>
+
+  <Target Name="ShaderTarget" BeforeTargets="$(ShaderBeforeTargets)" AfterTargets="$(ShaderAfterTargets)" Condition="'@(Shader)' != ''" DependsOnTargets="$(ShaderDependsOn);_WriteShaderTlogs" Outputs="%(Shader.Outputs)" Inputs="%(Shader.Identity);%(Shader.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup Condition="'@(SelectedFiles)' != ''">
+      <Shader Remove="@(Shader)" Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Shader_tlog Include="%(Shader.Outputs)" Condition="'%(Shader.Outputs)' != '' and '%(Shader.ExcludedFromBuild)' != 'true'">
+        <Source>@(Shader, '|')</Source>
+      </Shader_tlog>
+    </ItemGroup>
+    <Message Importance="High" Text="%(Shader.ExecutionDescription)" />
+    <WriteLinesToFile Condition="'@(Shader_tlog)' != '' and '%(Shader_tlog.ExcludedFromBuild)' != 'true'" File="$(IntDir)$(ProjectName).write.1.tlog" Lines="^%(Shader_tlog.Source);@(Shader_tlog-&gt;'%(Fullpath)')" />
+    <Shader Condition="'@(Shader)' != '' and '%(Shader.ExcludedFromBuild)' != 'true'" CommandLineTemplate="%(Shader.CommandLineTemplate)" OutputFile="%(Shader.OutputFile)" Inputs="%(Shader.Identity)" />
+  </Target>
+</Project>

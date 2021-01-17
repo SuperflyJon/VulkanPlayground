@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=mscorlib" xmlns:transformCallback="Microsoft.Cpp.Dev10.ConvertPropertyCallback">
+  <Rule Name="Shader" PageTemplate="tool" DisplayName="Shader files" Order="200">
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="Shader" />
+    </Rule.DataSource>
+
+    <StringListProperty Name="OutputFile" Category="Output" IsRequired="true" DisplayName="Output File Name" />
+
+    <StringListProperty Name="Inputs" Category="Command Line" IsRequired="true">
+      <StringListProperty.DataSource>
+        <DataSource Persistence="ProjectFile" ItemType="Shader" SourceType="Item" />
+      </StringListProperty.DataSource>
+    </StringListProperty>
+
+</Rule>
+  <ItemType Name="Shader" DisplayName="Shader files" />
+  <FileExtension Name="*.vert" ContentType="Shader" />
+  <FileExtension Name="*.geom" ContentType="Shader" />
+  <FileExtension Name="*.frag" ContentType="Shader" />
+  <ContentType Name="Shader" DisplayName="Shader files" ItemType="Shader" />
+  </ProjectSchemaDefinitions>
+  

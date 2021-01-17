@@ -1,0 +1,34 @@
+Vulkan SDK (https://vulkan.lunarg.com/sdk/home#windows) - Version 1.2.135.0
+	* Install sets VULKAN_SDK env variable
+
+GLM (https://glm.g-truc.net) - Version: 0.9.8.5 (need older version to work with GLI library)
+	* Extract the glm/glm subdirectory into External
+
+cmake (https://cmake.org/download) - Version: 3.17.1
+	* Binary distribution: Windows win64-x64 ZIP
+	* Need the bin and share folders (can remove doc and man folders)
+
+GLFW (https://www.glfw.org/download.html) - Version: 3.3.2
+	* Extract source package into a temporary glfw-src folder
+	* Run cmake on glfw-src folder
+	* Open solution (glfw-src\GLFW.sln) and build the release x64 configuration
+		+Copy 2 include files from include folder
+		and src\release\glfw3.lib into new External\GLFW folder
+
+AssImp (http://www.assimp.org/) - Version 5.01
+	* Like GLFW, extract source, run cmake, open solution, build assimp project in release x64 config
+	* Copy include\assimp files into new assimp folder in External as well as config.h file from cmake dir
+		* Copy assimp-vc142-mt.dll into bin folder
+
+stb image libarary (https://github.com/nothings/stb) - stb_image.h Version: 2.25
+	* Extract stb_image.h into External\stb folder
+	* Needs gli libary files (http://gli.g-truc.net/0.8.2/index.html) - Version: 0.8.2.0
+		* Extract the gli sub dir files into External\gli
+
+tinyobjloader (https://github.com/syoyo/tinyobjloader) - Version 1.3.1
+	* Extract tiny_obj_loader.h into External\tinyobjloader folder
+
+FreeType (https://download.savannah.gnu.org/releases/freetype/) - Version 10.4.2
+	* Extract into freetype sub directory
+	* Open freetype\builds\windows\vc2010\freetype.vcxproj and build release-x64 
+	

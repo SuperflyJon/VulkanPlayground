@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{2D3F3B8D-6B92-4BF4-9317-0815D5E93503}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>VulkanPlayground</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\scripts\VulkanPlayground.props" />
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(ProjectDir)..\bin\$(ProjectName)\int\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(ProjectDir)..\bin\$(ProjectName)\int\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\$(ProjectName)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>VulkanPlayground;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>VulkanPlayground;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="BitmapFontInternal.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="VulkanPlayground\Application.h" />
+    <ClInclude Include="VulkanPlayground\AssImp.h" />
+    <ClInclude Include="VulkanPlayground\BitmapFont.h" />
+    <ClInclude Include="VulkanPlayground\Buffers.h" />
+    <ClInclude Include="VulkanPlayground\Camera.h" />
+    <ClInclude Include="VulkanPlayground\Common.h" />
+    <ClInclude Include="VulkanPlayground\DebugCallback.h" />
+    <ClInclude Include="VulkanPlayground\Descriptor.h" />
+    <ClInclude Include="VulkanPlayground\DisplayBuffers.h" />
+    <ClInclude Include="VulkanPlayground\EventData.h" />
+    <ClInclude Include="VulkanPlayground\Extensions.h" />
+    <ClInclude Include="VulkanPlayground\FrameTimer.h" />
+    <ClInclude Include="VulkanPlayground\GLFW.h" />
+    <ClInclude Include="VulkanPlayground\Image.h" />
+    <ClInclude Include="VulkanPlayground\Includes.h" />
+    <ClInclude Include="VulkanPlayground\Model.h" />
+    <ClInclude Include="VulkanPlayground\Pipeline.h" />
+    <ClInclude Include="VulkanPlayground\PixelData.h" />
+    <ClInclude Include="VulkanPlayground\RenderPass.h" />
+    <ClInclude Include="VulkanPlayground\Shader.h" />
+    <ClInclude Include="VulkanPlayground\SwapChain.h" />
+    <ClInclude Include="VulkanPlayground\System.h" />
+    <ClInclude Include="VulkanPlayground\TextHelper.h" />
+    <ClInclude Include="VulkanPlayground\UBO.h" />
+    <ClInclude Include="VulkanPlayground\WindowSystem.h" />
+    <ClInclude Include="VulkanPlayground\WinUtil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="AssImp.cpp" />
+    <ClCompile Include="BitmapFont.cpp" />
+    <ClCompile Include="Buffers.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Common.cpp" />
+    <ClCompile Include="DebugCallback.cpp" />
+    <ClCompile Include="Descriptor.cpp" />
+    <ClCompile Include="DisplayBuffers.cpp" />
+    <ClCompile Include="EventData.cpp" />
+    <ClCompile Include="Extensions.cpp" />
+    <ClCompile Include="Freetype.cpp" />
+    <ClCompile Include="GLFW.cpp" />
+    <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Pipeline.cpp" />
+    <ClCompile Include="RenderPass.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="SwapChain.cpp" />
+    <ClCompile Include="System.cpp" />
+    <ClCompile Include="VulkanPlayground\TextHelper.cpp" />
+    <ClCompile Include="WindowSystem.cpp" />
+    <ClCompile Include="WinUtil.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Shader Include="shaders\Font.frag" />
+    <Shader Include="shaders\Font.geom" />
+    <Shader Include="shaders\Font.vert" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
