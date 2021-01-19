@@ -42,6 +42,7 @@ void BasicStrings::LoadStrings()
 		appKeys.Load(stringBase + 2);
 		basicKeyString.Load(IDR_BasicKeys);
 
+		AddPrintString("(1234567890/)");	// For counters
 		AddPrintString(appTitle);
 		AddPrintString(appDesc);
 		AddPrintString(appKeys);
