@@ -10,7 +10,7 @@
   <ItemDefinitionGroup>
     <Shader>
       <OutputFile>$(IntDir)../../%(Filename)%(Extension).spv</OutputFile>
-      <CommandLineTemplate>(for /f "skip=1 tokens=* delims=" %25%25a in ('C:\VulkanSDK\1.2.141.0\bin\glslangValidator.exe -C -V "%(FullPath)" -o "%(OutputFile)"') do (ECHO.%25%25a | FIND /I "No code generated">Nul %26%26 ( exit 4 ) || ( powershell -Command "write-host \"%(FullPath)\" %24(\"%25%25a\" -replace '([a-z ]+):.+:([0-9]+):(.*)', '($2) : $1 V0 : $3')"))) %26 exit 1</CommandLineTemplate>
+      <CommandLineTemplate>(for /f "skip=1 tokens=* delims=" %25%25a in ('C:\VulkanSDK\1.2.141.0\bin\glslangValidator.exe -C -V "%(FullPath)" -o "%(OutputFile)"') do (ECHO.%25%25a | FIND /I "No code generated">Nul %26%26 ( exit 1 ) || ( powershell -Command "write-host \"%(FullPath)\" %24(\"%25%25a\" -replace '([a-z ]+):.+:([0-9]+):(.*)', '($2) : $1 V0 : $3')"))) %26 exit 0</CommandLineTemplate>
       <Outputs>%(OutputFile);</Outputs>
       <ExecutionDescription>Process "%(Filename)%(Extension)" Shader file</ExecutionDescription>
     </Shader>
