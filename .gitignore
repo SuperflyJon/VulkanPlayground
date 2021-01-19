@@ -345,3 +345,4 @@ ASALocalRun/
 healthchecksdb
 /*.cap
 MiscFiles
+*.spv
