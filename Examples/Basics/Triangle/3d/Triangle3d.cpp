@@ -7,6 +7,7 @@ class Triangle3dApp : public VulkanApplication3D
 		descriptor.AddUniformBuffer(system, 0, mvpUBO, "MVP");
 		CreateDescriptor(system, descriptor, "Drawing");
 
+		pipeline.SetCullMode(VK_CULL_MODE_NONE);	// Show both sides of triangle
 		pipeline.LoadShader(system, "Triangle3d");
 		pipeline.SetupVertexDescription({ {1, Attribs::Type::Position, VK_FORMAT_R32G32B32_SFLOAT}, {2, Attribs::Type::Colour, VK_FORMAT_R32G32B32_SFLOAT} });
 		CreatePipeline(system, renderPass, pipeline, descriptor, workingExtent, "Triangle3d");

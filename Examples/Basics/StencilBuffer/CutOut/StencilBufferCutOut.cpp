@@ -30,6 +30,7 @@ class StencilBufferCutOutApp : public VulkanApplication3D
 
 		quadPipeline.EnableStencilTest(stencilOrCutout ? VK_COMPARE_OP_NOT_EQUAL : VK_COMPARE_OP_EQUAL, VK_STENCIL_OP_KEEP);
 		quadPipeline.SetupVertexDescription(Attribs::PosTex);
+		quadPipeline.SetCullMode(VK_CULL_MODE_NONE);	// So both sides of quad drawn
 		quadPipeline.LoadShader(system, "quad");
 		CreatePipeline(system, renderPass, quadPipeline, quadDescriptor, workingExtent, "Quad");
 
@@ -49,7 +50,7 @@ class StencilBufferCutOutApp : public VulkanApplication3D
 	void UpdateScene(VulkanSystem& system, float /*frameTime*/) override
 	{
 		quadUBO() = mvpUBO();
-		quadUBO().model = glm::scale(GetWorldPos().CalcViewMatrix(), glm::vec3(20.0f, 30.0f, 1.0f));
+		quadUBO().model = glm::scale(quadUBO().model, glm::vec3(20.0f, 30.0f, 1.0f));
 		quadUBO().model = glm::translate(quadUBO().model, glm::vec3(0.0f, -0.42f, 0.0f));
 		quadUBO.CopyToDevice(system);
 	}

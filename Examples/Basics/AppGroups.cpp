@@ -65,6 +65,12 @@ AppGroups::AppGroups(bool fontsEnabled)
 	ADD_APP(Texture, LoDTest);
 	AddGroup(TextureApps);
 
+	AppList TextureArrayApps;
+	ADD_APP(TextureArray, TextureArray);
+	ADD_APP(TextureArray, Instancing);
+	ADD_APP(TextureArray, SamplerArray);
+	AddGroup(TextureArrayApps);
+
 	AppList CubeMapApps;
 	ADD_APP(CubeMap, TextureArray);
 	ADD_APP(CubeMap, Unboxed);
@@ -74,12 +80,6 @@ AppGroups::AppGroups(bool fontsEnabled)
 	ADD_APP(CubeMap, ReflectModels);
 	ADD_APP(CubeMap, CubeMapPlusModels);
 	AddGroup(CubeMapApps);
-
-	AppList TextureArrayApps;
-	ADD_APP(TextureArray, TextureArray);
-	ADD_APP(TextureArray, Instancing);
-	ADD_APP(TextureArray, SamplerArray);
-	AddGroup(TextureArrayApps);
 
 	AppList Textures3dApps;
 	ADD_APP(Textures3d, SamplerArrayQuads);

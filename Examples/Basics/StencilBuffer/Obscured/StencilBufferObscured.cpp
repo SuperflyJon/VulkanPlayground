@@ -109,8 +109,8 @@ private:
 	Texture quadTexture;
 	Buffer vertexBuffer;
 
-	bool useStencil;
-	bool showHighlight;
+	bool useStencil = true;
+	bool showHighlight = true;
 };
 
 DECLARE_APP(StencilBufferObscured)
