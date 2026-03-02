@@ -39,7 +39,7 @@ public:
 
 	void CreateFrameBuffer(VulkanSystem& system, RenderPass& renderPass, VkImageView imageView, const VkExtent2D& extent, VkFormat depthBufferFormat, const std::string& debugName);
 	void CreateCmdBuffers(VulkanSystem& system, RenderPass& renderPass, std::function<void(VkCommandBuffer)> DrawFun, const std::string& debugName);
-	void SubmitCommandBuffer(uint32_t buffNum, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, const std::vector<VkSemaphore>& signalSemaphores, VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+	void SubmitCommandBuffer(uint32_t buffNum, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, const std::vector<VkSemaphore>& signalSemaphores, VkFence inFlightFence, VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
 	void FreeCmdBuffers(VulkanSystem& system);
 	void Tidy(VulkanSystem& system) override;

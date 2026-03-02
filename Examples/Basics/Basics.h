@@ -7,17 +7,20 @@ class AppGroups;
 class BasicStrings : public TextHelperBase
 {
 public:
-	BasicStrings(AppGroups& appGroups, const std::string& _appGroup, const std::string& _appName, int resVal);
+	BasicStrings(int resVal);
 	~BasicStrings();
 
-	void LoadStrings() override;
-	void PrintText(VulkanApplication& app) override;
+	void LoadStrings(const UnicodeString& title) override;
+	void PrintText(bool app3D, bool lightApp) override;
+	void SetGroupStrings(const std::string& groups, const std::string& subGroup)
+	{
+		groupString = groups;
+		subGroupString = subGroup;
+	}
 
 private:
-
-	AppGroups& appGroups;
-	std::string appGroup, appName;
 	int stringBase;
+	std::string groupString, subGroupString;
 
 	UnicodeString basicKeyString, appTitle, appDesc, appKeys;
 };

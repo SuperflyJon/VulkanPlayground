@@ -13,16 +13,32 @@ FontData::FontData(const std::string& _faceName, int _fontSize) : faceName(_face
 }
 FontData::~FontData() = default;	// Other object files don't know how big FontData is...
 
-namespace FreeType
-{
-	void LoadFont(const std::string& faceName, std::map<char32_t, CharData>& charList, Kerning& kerning, const std::vector<std::u32string>& preloadStrs, int fontSize, bool& anyColourGlyphs);
-}
-
 void FontData::LoadFont()
 {
 	AddCharacters(U".…");	// Ensure there is a dot as used for background and … if out of space
 
-	FreeType::LoadFont(faceName, charList, *kerning, preloadStrs, fontSize, anyColourGlyphs);
+	FreeTypeFont font(faceName, fontSize);
+	for (auto& character : requiredChars)
+	{
+		charList.emplace(character, font.LoadGlyphData(character, anyColourGlyphs));
+	}
+	requiredChars.clear();
+
+	// Get kerning values
+	for (const auto& text : preloadStrs)
+	{
+		char32_t lastChar = '\0';
+		for (auto character : text)
+		{
+			if (character == '\n')
+				continue;	// Skip new lines
+
+			if (lastChar != '\0')
+				font.CalcKern(*kerning, lastChar, charList.at(lastChar).GetIndex(), character, charList.at(character).GetIndex());
+
+			lastChar = character;
+		}
+	}
 
 	CreateFontTexture();
 }
@@ -54,7 +70,7 @@ TypeSetter& FontData::GetTypeSetter(int x, int y, unsigned int width, unsigned i
 	typeSetters.emplace_back(new TypeSetter(*this, x, y, width, height));
 	return *typeSetters.back();
 }
-
+/*
 void CharData::Setup(int indexVal, size_t advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data)
 {
 	index = indexVal;
@@ -71,7 +87,7 @@ void CharData::Setup(int indexVal, size_t advanceVal, size_t widthVal, size_t ro
 	bitdata = std::make_unique<byte[]>(dataSize);
 	memcpy(bitdata.get(), data, dataSize);
 }
-
+*/
 bool Packer::CalcPackSize(size_t width, size_t height)
 {
 	bool rowFull = curRowWidth + width > rowWidth - padding;
@@ -124,19 +140,20 @@ void CharData::CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, 
 	offsetY = Y;
 
 	// Copy glyph
-	byte* srcBuf = bitdata.get();
+	auto srcBuf = glyphData.bitdata.get();
 	for (size_t i = 0; i < height; i++)
 	{
-		if (i < rows)
+		if (i < glyphData.rows)
 		{
-			for (size_t j = 0; j < width; j++)
-				destBuf[X + j].Copy(srcBuf, coloured);
+			for (size_t j = 0; j < glyphData.width; j++)
+				destBuf[X + j].Copy(srcBuf, glyphData.coloured);
 
-			memset(destBuf + (size_t)X + width, 0, sizeof(TYPE));
+			memset(destBuf + (size_t)X + glyphData.width, 0, sizeof(TYPE));
 		}
 
 		destBuf += rowWidth;
 	}
+	glyphData.bitdata.reset();	// Free bitmap data
 }
 
 template<class TYPE>
@@ -192,6 +209,9 @@ uint32_t FontData::CalculateTextureHeight(Packer& packer)
 void FontData::CreateFontTexture()
 {
 	pixelData.width = CalculateTextureWidth();
+	if (pixelData.width == 0)
+		return;
+
 	Packer packer(pixelData.width, FONT_BITMAP_SPACING);
 	pixelData.height = CalculateTextureHeight(packer);
 	packer.Reset();
@@ -214,19 +234,6 @@ void FontData::CreateFontTexture()
 				packer.Pack(character.second, (Grey*)pixelData.pixels);
 		}
 	}
-}
-
-int Kerning::GetKerning(char32_t first, char32_t second) const
-{
-	auto firstPos = kerning.find(first);
-	if (firstPos != kerning.end())
-	{
-		auto& secondMap = firstPos->second;
-		auto secondPos = secondMap.find(second);
-		if (secondPos != secondMap.end())
-			return secondPos->second;
-	}
-	return 0;
 }
 
 void Vulkan2DFont::Setup(VulkanSystem& system, VulkanApplication& theApp, VkExtent2D workingExtent, const RenderPass& renderPass, int windowWidth, int windowHeight)
@@ -335,11 +342,13 @@ bool FontData::AddCharacters(const std::u32string& text, bool showMissingChars)
 	std::u32string newChars;
 	for (auto character : text)
 	{
-		if ((charList.find(character) == charList.end()) && (character != '\n'))
+		if (character != '\n')
 		{
-			// Add character to be loaded
-			charList.emplace(character, CharData());
-			newChars.push_back(character);
+			if (requiredChars.find(character) == requiredChars.end() && charList.find(character) == charList.end())
+			{	// Add character to be loaded
+				requiredChars.insert(character);
+				newChars.push_back(character);
+			}
 		}
 	}
 	if (showMissingChars && !newChars.empty())

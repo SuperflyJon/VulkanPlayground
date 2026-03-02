@@ -42,4 +42,6 @@ private:
 
 	VkQueue graphicsQueue{};
 	VkQueue presentQueue{};
+
+	VkFence inFlightFence;
 };

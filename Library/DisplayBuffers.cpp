@@ -138,7 +138,7 @@ void DisplayBuffers::CreateCmdBuffers(VulkanSystem& system, RenderPass& renderPa
 	}
 }
 
-void DisplayBuffers::SubmitCommandBuffer(uint32_t buffNum, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, const std::vector<VkSemaphore>& signalSemaphores, VkPipelineStageFlags waitStage)
+void DisplayBuffers::SubmitCommandBuffer(uint32_t buffNum, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, const std::vector<VkSemaphore>& signalSemaphores, VkFence inFlightFence, VkPipelineStageFlags waitStage)
 {
 	VkSubmitInfo submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO };
 
@@ -160,7 +160,7 @@ void DisplayBuffers::SubmitCommandBuffer(uint32_t buffNum, VkQueue queue, const 
 		submitInfo.signalSemaphoreCount = (uint32_t)signalSemaphores.size();
 		submitInfo.pSignalSemaphores = signalSemaphores.data();
 	}
-	CHECK_VULKAN(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE), "Failed to submit draw command");
+	CHECK_VULKAN(vkQueueSubmit(queue, 1, &submitInfo, inFlightFence), "Failed to submit draw command");
 }
 
 void DisplayBuffers::Tidy(VulkanSystem& system)

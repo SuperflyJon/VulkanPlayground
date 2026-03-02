@@ -7,8 +7,7 @@
 class WindowSystem
 {
 public:
-	WindowSystem() : instance(0), windowSurface(0) {}
-	bool InitWindow(int windowWidth, int windowHeight, const std::string& windowName, GLFW::keyHandlerFn keyHandler = nullptr, void* keyHandlerData = nullptr);
+	WindowSystem(int windowWidth, int windowHeight, const std::string& windowName, GLFW::keyHandlerFn keyHandler = nullptr, void* keyHandlerData = nullptr);
 	void RunApp(VulkanApplication& app);
 	void Close();
 	bool Running() { return window.Running(); }

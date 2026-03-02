@@ -12,24 +12,13 @@
 #include "BitmapFont.h"
 #include "Model.h"
 #include "FrameTimer.h"
-#include "TextHelper.h"
 
 VulkanApplication::VulkanApplication()
 	: windowWidth(0), windowHeight(0), objectsCreated(false), redrawScene(false), resetScene(true), showFPS(false), vSync(true),
 	  depthBufferFormat(VK_FORMAT_UNDEFINED), fontRenderPass(nullptr), textHelper(nullptr)
 {
 }
-VulkanApplication::~VulkanApplication()
-{
-}
-
-void VulkanApplication::Starting(const VulkanSystem& system)
-{
-	if (!system.fontsEnabled)
-		textHelper.reset(new ITextHelper());	// Disable text functions
-	else
-		GetTextHelper()->LoadStrings();
-}
+VulkanApplication::~VulkanApplication() = default;
 
 void VulkanApplication::SetupObjects(VulkanSystem& system, RenderPasses& renderPasses, VkExtent2D workingExtent)
 {
@@ -48,7 +37,7 @@ void VulkanApplication::SetupWindowObjects(SwapChain& swapChain, VkSurfaceKHR wi
 	// Create new things
 	swapChain.Create(system, windowSurface, windowWidth, windowHeight, vSync, "Application");
 	SetupRenderPasses(renderPasses, system, swapChain.GetImageFormat());
-	if (system.fontsEnabled)
+	if (GetTextHelper()->Enabled())
 	{	// Use separate render pass as main one might not be compatible
 		fontRenderPass = &renderPasses.NewRenderPass();
 		fontRenderPass->AddColourAttachment(swapChain.GetImageFormat(), "Fonts", VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -97,8 +86,7 @@ void VulkanApplication::CreateCommandBuffers(VulkanSystem& system, RenderPasses&
 			system.DebugEndRegion(commandBuffer);
 		}, "DrawCmds");
 
-	if (system.fontsEnabled)
-		GetTextHelper()->CreateCommandBuffers(system, renderPasses);
+	GetTextHelper()->CreateFontCommandBuffers(system, fontRenderPass);
 }
 
 void VulkanApplication::TidyDescriptors(VulkanSystem& system)
@@ -480,7 +468,7 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 		}
 	}
 
-	GetTextHelper()->PrintText(*this);
+	GetTextHelper()->PrintText(dynamic_cast<VulkanApplication3D*>(this), dynamic_cast<VulkanApplication3DLight*>(this));
 
 	UpdateScene(system, frameTime.LastFrameTime());
 }
@@ -493,7 +481,7 @@ void VulkanApplication::SetTextHelper(ITextHelper* helper)
 ITextHelper* VulkanApplication::GetTextHelper()
 {
 	if (!textHelper)
-		textHelper.reset(new TextHelperBase());
+		throw std::runtime_error("TextHelper not set!");
 
 	return textHelper.get();
 }

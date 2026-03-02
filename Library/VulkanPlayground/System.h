@@ -52,7 +52,7 @@ public:
 	VulkanSystem();
 
 	void FindDevice(VkInstance instance, VkSurfaceKHR windowSurface, const Extensions& extensions);
-	void Setup(const Extensions& extensions, VulkanApplication& app);
+	void SetupSystem(const Extensions& extensions, VulkanApplication& app);
 	void TidyUp();
 	bool FindModule(const std::string& shaderFilename, VkShaderModule& shaderModule);
 
@@ -92,8 +92,6 @@ public:
 	void DebugInsertLabel(VkQueue queue, const std::string& label, const ColType& colour = ColType{ 0 }) { debugMarker.InsertLabel(queue, label, colour); }
 	void DebugStartRegion(VkQueue queue, const std::string& label, const ColType& colour = ColType{ 0 }) { debugMarker.StartRegion(queue, label, colour); }
 	void DebugEndRegion(VkQueue queue) { debugMarker.EndRegion(queue); }
-
-	bool fontsEnabled;
 
 private:
 	VkPhysicalDevice physicalDevice;

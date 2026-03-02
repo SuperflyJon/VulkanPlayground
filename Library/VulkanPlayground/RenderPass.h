@@ -67,9 +67,9 @@ public:
 	}
 	const ImageWithViewList& GetAttachmentImage(uint32_t index) { return displayBuffers.GetAttachmentImage(index); }
 
-	VkSemaphore SubmitCommandBuffer(uint32_t imageIndex, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+	VkSemaphore SubmitCommandBuffer(uint32_t imageIndex, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, VkFence inFlightFence, VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
 	{
-		displayBuffers.SubmitCommandBuffer(imageIndex, queue, waitSemaphores, { renderFinished.get() }, waitStage);
+		displayBuffers.SubmitCommandBuffer(imageIndex, queue, waitSemaphores, { renderFinished.get() }, inFlightFence, waitStage);
 		return renderFinished.get();
 	}
 	VkSemaphore GetWaitSemaphore() const { return imageAvailable.get(); }
@@ -137,9 +137,9 @@ public:
 	{
 		renderPasses[pass]->CreateCmdBuffers(system, DrawFun, debugName);
 	}
-	VkSemaphore SubmitCommandBuffer(uint32_t pass, uint32_t imageIndex, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+	VkSemaphore SubmitCommandBuffer(uint32_t pass, uint32_t imageIndex, VkQueue queue, const std::vector<VkSemaphore>& waitSemaphores, VkFence inFlightFence, VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
 	{
-		return renderPasses[pass]->SubmitCommandBuffer(imageIndex, queue, waitSemaphores, waitStage);
+		return renderPasses[pass]->SubmitCommandBuffer(imageIndex, queue, waitSemaphores, inFlightFence, waitStage);
 	}
 	VkSemaphore GetInitialWaitSemaphore()
 {

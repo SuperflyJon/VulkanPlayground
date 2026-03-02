@@ -6,40 +6,28 @@
 #include "SwapChain.h"
 #include "RenderPass.h"
 #include "FrameTimer.h"
+#include "TextHelper.h"
 
-bool WindowSystem::InitWindow(int windowWidth, int windowHeight, const std::string& windowName, GLFW::keyHandlerFn keyHandler, void* keyHandlerData)
+WindowSystem::WindowSystem(int windowWidth, int windowHeight, const std::string& windowName, GLFW::keyHandlerFn keyHandler, void* keyHandlerData)
 {
-	try
-	{
-		extensions.Setup(GLFW::GetReqExtensions());
-		instance = VulkanPlayground::CreateInstance(windowName, extensions);
-		extensions.SetupDebugCallback(instance, VulkanPlayground::DebugCallbackFn);
+	extensions.Setup(GLFW::GetReqExtensions());
+	instance = VulkanPlayground::CreateInstance(windowName, extensions);
+	system.DebugNameObject(instance, VK_OBJECT_TYPE_INSTANCE, "Instance", "Main Vulkan Instance");	// This is here as need to create device before naming things
+	extensions.SetupDebugCallback(instance, VulkanPlayground::DebugCallbackFn);
 
-		window.Create(windowWidth, windowHeight, windowName, keyHandler, keyHandlerData, false);
-
-		windowSurface = window.CreateSurface(instance);
-
-		system.FindDevice(instance, windowSurface, extensions);
-	}
-	catch (std::runtime_error & err)
-	{
-		WinUtils::OutputError("Failed to setup window, fatal error: " + std::string(err.what()));
-		return false;
-	}
-	return true;
+	window.Create(windowWidth, windowHeight, windowName, keyHandler, keyHandlerData, false);
+	windowSurface = window.CreateSurface(instance);
+	system.FindDevice(instance, windowSurface, extensions);
 }
 
 void WindowSystem::RunApp(VulkanApplication& app)
 {
-	app.Starting(system);
 	SwapChain swapChain;
 	RenderPasses renderPasses;
 
 	try
 	{
-		system.Setup(extensions, app);
-		// Next line crashes!  Bug in VulkanSDK and/or graphics driver?
-		//system.DebugNameObject(instance, VK_OBJECT_TYPE_INSTANCE, "Main Vulkan Instance");	// This is here as need to create device before naming things
+		system.SetupSystem(extensions, app);
 
 		app.GetWindowSize(window);
 
@@ -135,10 +123,8 @@ void WindowSystem::Close()
 
 void WindowSystem::RunWindowed(int width, int height, const std::string& name, VulkanApplication& app)
 {
-	WindowSystem windowSystem;
-	if (!windowSystem.InitWindow(width, height, name))
-		return;
-
+	WindowSystem windowSystem(width, height, name);
+		
 	app.SetTitle(name);
 	do
 	{

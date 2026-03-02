@@ -15,6 +15,7 @@ void SwapChain::Tidy(VulkanSystem& system)
 	if (swapChain != nullptr)
 	{
 		system.DeviceWaitIdle();
+		vkDestroyFence(system.GetDevice(), inFlightFence, nullptr);
 		vkDestroySwapchainKHR(system.GetDevice(), swapChain, nullptr);
 		swapChain = nullptr;
 	}
@@ -75,6 +76,10 @@ void SwapChain::Create(VulkanSystem &system, VkSurfaceKHR windowSurface, uint32_
 	graphicsQueue = system.GetGraphicsQueuePool().GetQueue();
 	vkGetDeviceQueue(system.GetDevice(), system.GetQueueIndicies().presentFamily, 0, &presentQueue);
 	system.DebugNameObject(presentQueue, VK_OBJECT_TYPE_QUEUE, "Queue", debugName);
+
+	VkFenceCreateInfo fenceInfo{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	vkCreateFence(system.GetDevice(), &fenceInfo, nullptr, &inFlightFence);
 }
 
 void SwapChain::CreateFrameBuffers(VulkanSystem &system, RenderPasses& renderPasses, VkFormat depthBufferFormat, const std::string& debugName)
@@ -143,9 +148,12 @@ bool SwapChain::DrawFrame(VulkanSystem& system, RenderPasses &renderPasses)
 	RenderPass* offscreenRenderPass = renderPasses.GetOffscreenRenderPass();
 	if (offscreenRenderPass)
 	{
-		auto extraWait = offscreenRenderPass->SubmitCommandBuffer(0, graphicsQueue, {});
+		auto extraWait = offscreenRenderPass->SubmitCommandBuffer(0, graphicsQueue, {}, VK_NULL_HANDLE);
 		waitSemaphores.push_back(extraWait);
 	}
+
+	vkWaitForFences(system.GetDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+	vkResetFences(system.GetDevice(), 1, &inFlightFence);
 
 	uint32_t imageIndex;
 	VkResult result = vkAcquireNextImageKHR(system.GetDevice(), swapChain, VulkanPlayground::NO_TIMEOUT, waitSemaphore, VK_NULL_HANDLE, &imageIndex);
@@ -154,9 +162,11 @@ bool SwapChain::DrawFrame(VulkanSystem& system, RenderPasses &renderPasses)
 	if (!CHECK_VULKAN(result, "Failed to acquire swap chain image!"))
 		return false;
 
+	auto count = renderPasses.GetRenderPasses().size();
 	for (auto renderPass : renderPasses.GetRenderPasses())
 	{
-		waitSemaphore = renderPass->SubmitCommandBuffer(imageIndex, graphicsQueue, waitSemaphores);
+		VkFence fenceToUse = (--count) ? VK_NULL_HANDLE : inFlightFence;
+		waitSemaphore = renderPass->SubmitCommandBuffer(imageIndex, graphicsQueue, waitSemaphores, fenceToUse);
 		waitSemaphores = { waitSemaphore };
 	}
 

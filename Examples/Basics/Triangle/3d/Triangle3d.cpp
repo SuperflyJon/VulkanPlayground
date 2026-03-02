@@ -36,5 +36,3 @@ class Triangle3dApp : public VulkanApplication3D
 	Descriptor descriptor;
 	Buffer vertexBuffer;
 };
-
-DECLARE_APP(Triangle3d)

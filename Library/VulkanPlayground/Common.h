@@ -19,6 +19,7 @@ const size_t INVALID_SIZE = (size_t)-1;
 class ITidy
 {
 public:
+	virtual ~ITidy() = default;
 	virtual void Tidy(VulkanSystem& system) = 0;
 };
 
@@ -179,8 +180,7 @@ public:
 
 	void Load(int resourceID);
 
-	const std::u32string& GetUtf32String() const { return string; }
-	operator std::u32string&() { return string; }
+	operator const std::u32string&() const { return string; }
 	bool empty() const { return string.empty(); }
 
 private:
@@ -188,3 +188,10 @@ private:
 	
 	static std::map<int, std::u32string> strings;
 };
+
+inline std::u32string operator+(const char32_t* lhs, const UnicodeString& rhs) {
+	return lhs + static_cast<const std::u32string&>(rhs);
+}
+inline std::u32string operator+(const UnicodeString& lhs, const char32_t* rhs) {
+	return static_cast<const std::u32string&>(lhs) + rhs;
+}

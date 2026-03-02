@@ -36,8 +36,7 @@ class VulkanApplication : public ITidy
 {
 public:
 	VulkanApplication();
-	~VulkanApplication();
-	void Starting(const VulkanSystem& system);
+	virtual ~VulkanApplication();
 
 	// Setup all graphics objects
 	virtual void SetupObjects(VulkanSystem& /*system*/, RenderPass& /*renderPass*/, VkExtent2D /*workingExtent*/) { }
@@ -121,6 +120,9 @@ public:
 
 	void SetTitle(const UnicodeString& name) { title = name; }
 	const UnicodeString& GetTitle() const { return title; }
+
+	std::string GetGroupString();
+	std::string GetSubGroupString();
 
 protected:
 	int windowWidth, windowHeight;

@@ -5,145 +5,186 @@
 #include "resource.h"
 #include "Basics.h"
 
-#define ADD_APP(apps, name) \
-	extern VulkanApplication& Create ## apps ## name ## App(); \
-	auto& apps ## name = Create ## apps ## name ## App(); \
-	if (fontsEnabled) apps ## name.SetTextHelper(new BasicStrings(*this, #apps, #name, IDR_ ## apps ## _ ## name ##)); \
-	apps ## Apps.push_back(&apps ## name)
+#include "Triangle/Simple/TriangleSimple.h"
+#include "Triangle/Light/TriangleLight.h"
+#include "Triangle/3d/Triangle3d.h"
 
-AppGroups::AppGroups(bool fontsEnabled)
+// Helper implementation
+void AppGroups::AddApp(AppList& list, VulkanApplication& app, const std::string& groupName, const std::string& appName, int resourceId)
 {
-	AppList TriangleApps;
-	ADD_APP(Triangle, Simple);
-	ADD_APP(Triangle, 3d);
-	ADD_APP(Triangle, Light);
-	AddGroup(TriangleApps);
+	app.SetTitle(groupName + " - " + appName);
+
+	if (fontsEnabled)
+		app.SetTextHelper(new BasicStrings(resourceId));
+	else
+		app.SetTextHelper(new ITextHelper());	// Disable text functions
+
+	list.Add(app);
+}
+void AppGroups::AddApp(AppList& list, VulkanApplication& (*createFunc)(), const std::string& groupName, const std::string& appName, int resourceId)
+{
+	list.SetName(groupName);
+	AddApp(list, createFunc(), groupName, appName, resourceId);
+}
+void AppGroups::AddAppGroup(const std::string &groupName, std::vector<AppDetails> appDetails)
+{
+	AppList newGroup(groupName);
+	for (auto& appDetail : appDetails)
+	{
+		AddApp(newGroup, *appDetail.app, groupName, appDetail.appName, appDetail.appResourceID);
+	}
+	AddGroup(newGroup);
+}
+
+AppGroups::AppGroups()
+	: fontsEnabled(true)
+{
+	AddAppGroup("Triangle", {
+		{new TriangleSimpleApp, "Simple", IDR_Triangle_Simple},
+		{new Triangle3dApp, "3d", IDR_Triangle_3d},
+		{new TriangleLightApp, "Light", IDR_Triangle_Light}
+	});
 
 	AppList PipelinesApps;
-	ADD_APP(Pipelines, Scene1);
-	ADD_APP(Pipelines, Scene2);
-	ADD_APP(Pipelines, Scene3);
-	ADD_APP(Pipelines, DynamicViewports);
-	ADD_APP(Pipelines, Multiple);
-	ADD_APP(Pipelines, MultipleDerived);
+	AddApp(PipelinesApps, CreatePipelinesScene1App, "Pipelines", "Scene1", IDR_Pipelines_Scene1);
+	AddApp(PipelinesApps, CreatePipelinesScene2App, "Pipelines", "Scene2", IDR_Pipelines_Scene2);
+	AddApp(PipelinesApps, CreatePipelinesScene3App, "Pipelines", "Scene3", IDR_Pipelines_Scene3);
+	AddApp(PipelinesApps, CreatePipelinesDynamicViewportsApp, "Pipelines", "DynamicViewports", IDR_Pipelines_DynamicViewports);
+	AddApp(PipelinesApps, CreatePipelinesMultipleApp, "Pipelines", "Multiple", IDR_Pipelines_Multiple);
+	AddApp(PipelinesApps, CreatePipelinesMultipleDerivedApp, "Pipelines", "MultipleDerived", IDR_Pipelines_MultipleDerived);
 	AddGroup(PipelinesApps);
 
 	AppList DescriptorSetsApps;
-	ADD_APP(DescriptorSets, Cube1);
-	ADD_APP(DescriptorSets, Cube2);
-	ADD_APP(DescriptorSets, TwoCubes);
-	ADD_APP(DescriptorSets, LitCubes);
+	AddApp(DescriptorSetsApps, CreateDescriptorSetsCube1App, "DescriptorSets", "Cube1", IDR_DescriptorSets_Cube1);
+	AddApp(DescriptorSetsApps, CreateDescriptorSetsCube2App, "DescriptorSets", "Cube2", IDR_DescriptorSets_Cube2);
+	AddApp(DescriptorSetsApps, CreateDescriptorSetsTwoCubesApp, "DescriptorSets", "TwoCubes", IDR_DescriptorSets_TwoCubes);
+	AddApp(DescriptorSetsApps, CreateDescriptorSetsLitCubesApp, "DescriptorSets", "LitCubes", IDR_DescriptorSets_LitCubes);
 	AddGroup(DescriptorSetsApps);
 
 	AppList DynamicUniformBufferApps;
-	ADD_APP(DynamicUniformBuffer, MultipleCubes);
-	ADD_APP(DynamicUniformBuffer, CubeOfCubes);
-	ADD_APP(DynamicUniformBuffer, SpinningCubes);
-	ADD_APP(DynamicUniformBuffer, LitCubes);
+	AddApp(DynamicUniformBufferApps, CreateDynamicUniformBufferMultipleCubesApp, "DynamicUniformBuffer", "MultipleCubes", IDR_DynamicUniformBuffer_MultipleCubes);
+	AddApp(DynamicUniformBufferApps, CreateDynamicUniformBufferCubeOfCubesApp, "DynamicUniformBuffer", "CubeOfCubes", IDR_DynamicUniformBuffer_CubeOfCubes);
+	AddApp(DynamicUniformBufferApps, CreateDynamicUniformBufferSpinningCubesApp, "DynamicUniformBuffer", "SpinningCubes", IDR_DynamicUniformBuffer_SpinningCubes);
+	AddApp(DynamicUniformBufferApps, CreateDynamicUniformBufferLitCubesApp, "DynamicUniformBuffer", "LitCubes", IDR_DynamicUniformBuffer_LitCubes);
 	AddGroup(DynamicUniformBufferApps);
 
 	AppList PushConstantsApps;
-	ADD_APP(PushConstants, Model);
-	ADD_APP(PushConstants, UniformSpot);
-	ADD_APP(PushConstants, PushConstantSpot);
-	ADD_APP(PushConstants, MultiSpot);
-	ADD_APP(PushConstants, Cubes);
+	AddApp(PushConstantsApps, CreatePushConstantsModelApp, "PushConstants", "Model", IDR_PushConstants_Model);
+	AddApp(PushConstantsApps, CreatePushConstantsUniformSpotApp, "PushConstants", "UniformSpot", IDR_PushConstants_UniformSpot);
+	AddApp(PushConstantsApps, CreatePushConstantsPushConstantSpotApp, "PushConstants", "PushConstantSpot", IDR_PushConstants_PushConstantSpot);
+	AddApp(PushConstantsApps, CreatePushConstantsMultiSpotApp, "PushConstants", "MultiSpot", IDR_PushConstants_MultiSpot);
+	AddApp(PushConstantsApps, CreatePushConstantsCubesApp, "PushConstants", "Cubes", IDR_PushConstants_Cubes);
 	AddGroup(PushConstantsApps);
 
 	AppList SpecializationConstantsApps;
-	ADD_APP(SpecializationConstants, Scene1);
-	ADD_APP(SpecializationConstants, Scene2);
-	ADD_APP(SpecializationConstants, Scene3);
-	ADD_APP(SpecializationConstants, MultipleScenes);
-	ADD_APP(SpecializationConstants, UberShader);
-	ADD_APP(SpecializationConstants, UberShaderSingle);
+	AddApp(SpecializationConstantsApps, CreateSpecializationConstantsScene1App, "SpecializationConstants", "Scene1", IDR_SpecializationConstants_Scene1);
+	AddApp(SpecializationConstantsApps, CreateSpecializationConstantsScene2App, "SpecializationConstants", "Scene2", IDR_SpecializationConstants_Scene2);
+	AddApp(SpecializationConstantsApps, CreateSpecializationConstantsScene3App, "SpecializationConstants", "Scene3", IDR_SpecializationConstants_Scene3);
+	AddApp(SpecializationConstantsApps, CreateSpecializationConstantsMultipleScenesApp, "SpecializationConstants", "MultipleScenes", IDR_SpecializationConstants_MultipleScenes);
+	AddApp(SpecializationConstantsApps, CreateSpecializationConstantsUberShaderApp, "SpecializationConstants", "UberShader", IDR_SpecializationConstants_UberShader);
+	AddApp(SpecializationConstantsApps, CreateSpecializationConstantsUberShaderSingleApp, "SpecializationConstants", "UberShaderSingle", IDR_SpecializationConstants_UberShaderSingle);
 	AddGroup(SpecializationConstantsApps);
 
 	AppList TextureApps;
-	ADD_APP(Texture, Shield);
-	ADD_APP(Texture, LoD);
-	ADD_APP(Texture, LoDTest);
+	AddApp(TextureApps, CreateTextureShieldApp, "Texture", "Shield", IDR_Texture_Shield);
+	AddApp(TextureApps, CreateTextureLoDApp, "Texture", "LoD", IDR_Texture_LoD);
+	AddApp(TextureApps, CreateTextureLoDTestApp, "Texture", "LoDTest", IDR_Texture_LoDTest);
 	AddGroup(TextureApps);
 
 	AppList TextureArrayApps;
-	ADD_APP(TextureArray, TextureArray);
-	ADD_APP(TextureArray, Instancing);
-	ADD_APP(TextureArray, SamplerArray);
+	AddApp(TextureArrayApps, CreateTextureArrayTextureArrayApp, "TextureArray", "TextureArray", IDR_TextureArray_TextureArray);
+	AddApp(TextureArrayApps, CreateTextureArrayInstancingApp, "TextureArray", "Instancing", IDR_TextureArray_Instancing);
+	AddApp(TextureArrayApps, CreateTextureArraySamplerArrayApp, "TextureArray", "SamplerArray", IDR_TextureArray_SamplerArray);
 	AddGroup(TextureArrayApps);
 
 	AppList CubeMapApps;
-	ADD_APP(CubeMap, TextureArray);
-	ADD_APP(CubeMap, Unboxed);
-	ADD_APP(CubeMap, Boxed);
-	ADD_APP(CubeMap, CubeMap);
-	ADD_APP(CubeMap, Models);
-	ADD_APP(CubeMap, ReflectModels);
-	ADD_APP(CubeMap, CubeMapPlusModels);
+	AddApp(CubeMapApps, CreateCubeMapTextureArrayApp, "CubeMap", "TextureArray", IDR_CubeMap_TextureArray);
+	AddApp(CubeMapApps, CreateCubeMapUnboxedApp, "CubeMap", "Unboxed", IDR_CubeMap_Unboxed);
+	AddApp(CubeMapApps, CreateCubeMapBoxedApp, "CubeMap", "Boxed", IDR_CubeMap_Boxed);
+	AddApp(CubeMapApps, CreateCubeMapCubeMapApp, "CubeMap", "CubeMap", IDR_CubeMap_CubeMap);
+	AddApp(CubeMapApps, CreateCubeMapModelsApp, "CubeMap", "Models", IDR_CubeMap_Models);
+	AddApp(CubeMapApps, CreateCubeMapReflectModelsApp, "CubeMap", "ReflectModels", IDR_CubeMap_ReflectModels);
+	AddApp(CubeMapApps, CreateCubeMapCubeMapPlusModelsApp, "CubeMap", "CubeMapPlusModels", IDR_CubeMap_CubeMapPlusModels);
 	AddGroup(CubeMapApps);
 
 	AppList Textures3dApps;
-	ADD_APP(Textures3d, SamplerArrayQuads);
-	ADD_APP(Textures3d, SamplerArrayMoreQuads);
-	ADD_APP(Textures3d, MoreQuads3d);
-	ADD_APP(Textures3d, Noise3d);
+	AddApp(Textures3dApps, CreateTextures3dSamplerArrayQuadsApp, "Textures3d", "SamplerArrayQuads", IDR_Textures3d_SamplerArrayQuads);
+	AddApp(Textures3dApps, CreateTextures3dSamplerArrayMoreQuadsApp, "Textures3d", "SamplerArrayMoreQuads", IDR_Textures3d_SamplerArrayMoreQuads);
+	AddApp(Textures3dApps, CreateTextures3dMoreQuads3dApp, "Textures3d", "MoreQuads3d", IDR_Textures3d_MoreQuads3d);
+	AddApp(Textures3dApps, CreateTextures3dNoise3dApp, "Textures3d", "Noise3d", IDR_Textures3d_Noise3d);
 	AddGroup(Textures3dApps);
 
 	AppList ModelApps;
-	ADD_APP(Model, TestModel);
-	ADD_APP(Model, TestMesh);
-	ADD_APP(Model, LitTestMesh);
+	AddApp(ModelApps, CreateModelTestModelApp, "Model", "TestModel", IDR_Model_TestModel);
+	AddApp(ModelApps, CreateModelTestMeshApp, "Model", "TestMesh", IDR_Model_TestMesh);
+	AddApp(ModelApps, CreateModelLitTestMeshApp, "Model", "LitTestMesh", IDR_Model_LitTestMesh);
 	AddGroup(ModelApps);
 
 	AppList InputAttachmentsApps;
-	ADD_APP(InputAttachments, Scene);
-	ADD_APP(InputAttachments, Depth);
-	ADD_APP(InputAttachments, Multipass);
+	AddApp(InputAttachmentsApps, CreateInputAttachmentsSceneApp, "InputAttachments", "Scene", IDR_InputAttachments_Scene);
+	AddApp(InputAttachmentsApps, CreateInputAttachmentsDepthApp, "InputAttachments", "Depth", IDR_InputAttachments_Depth);
+	AddApp(InputAttachmentsApps, CreateInputAttachmentsMultipassApp, "InputAttachments", "Multipass", IDR_InputAttachments_Multipass);
 	AddGroup(InputAttachmentsApps);
 
 	AppList SubPassesApps;
-	ADD_APP(SubPasses, Scene);
-	ADD_APP(SubPasses, GBuffer);
-	ADD_APP(SubPasses, GBufferDraw);
-	ADD_APP(SubPasses, GBufferGlass);
-	ADD_APP(SubPasses, GBufferLit);
+	AddApp(SubPassesApps, CreateSubPassesSceneApp, "SubPasses", "Scene", IDR_SubPasses_Scene);
+	AddApp(SubPassesApps, CreateSubPassesGBufferApp, "SubPasses", "GBuffer", IDR_SubPasses_GBuffer);
+	AddApp(SubPassesApps, CreateSubPassesGBufferDrawApp, "SubPasses", "GBufferDraw", IDR_SubPasses_GBufferDraw);
+	AddApp(SubPassesApps, CreateSubPassesGBufferGlassApp, "SubPasses", "GBufferGlass", IDR_SubPasses_GBufferGlass);
+	AddApp(SubPassesApps, CreateSubPassesGBufferLitApp, "SubPasses", "GBufferLit", IDR_SubPasses_GBufferLit);
 	AddGroup(SubPassesApps);
 
 	AppList OffscreenApps;
-	ADD_APP(Offscreen, Scene);
-	ADD_APP(Offscreen, Offscreen);
-	ADD_APP(Offscreen, Reflect);
+	AddApp(OffscreenApps, CreateOffscreenSceneApp, "Offscreen", "Scene", IDR_Offscreen_Scene);
+	AddApp(OffscreenApps, CreateOffscreenOffscreenApp, "Offscreen", "Offscreen", IDR_Offscreen_Offscreen);
+	AddApp(OffscreenApps, CreateOffscreenReflectApp, "Offscreen", "Reflect", IDR_Offscreen_Reflect);
 	AddGroup(OffscreenApps);
 
 	AppList ParticlesApps;
-	ADD_APP(Particles, NormalMap);
-	ADD_APP(Particles, Flame);
-	ADD_APP(Particles, Smoke);
-	ADD_APP(Particles, Fire);
-	ADD_APP(Particles, Combined);
+	AddApp(ParticlesApps, CreateParticlesNormalMapApp, "Particles", "NormalMap", IDR_Particles_NormalMap);
+	AddApp(ParticlesApps, CreateParticlesFlameApp, "Particles", "Flame", IDR_Particles_Flame);
+	AddApp(ParticlesApps, CreateParticlesSmokeApp, "Particles", "Smoke", IDR_Particles_Smoke);
+	AddApp(ParticlesApps, CreateParticlesFireApp, "Particles", "Fire", IDR_Particles_Fire);
+	AddApp(ParticlesApps, CreateParticlesCombinedApp, "Particles", "Combined", IDR_Particles_Combined);
 	AddGroup(ParticlesApps);
 
 	AppList StencilBufferApps;
-	ADD_APP(StencilBuffer, Scene);
-	ADD_APP(StencilBuffer, Stencil);
-	ADD_APP(StencilBuffer, CutOut);
-	ADD_APP(StencilBuffer, Outline);
-	ADD_APP(StencilBuffer, Highlight);
-	ADD_APP(StencilBuffer, Obscured);
+	AddApp(StencilBufferApps, CreateStencilBufferSceneApp, "StencilBuffer", "Scene", IDR_StencilBuffer_Scene);
+	AddApp(StencilBufferApps, CreateStencilBufferStencilApp, "StencilBuffer", "Stencil", IDR_StencilBuffer_Stencil);
+	AddApp(StencilBufferApps, CreateStencilBufferCutOutApp, "StencilBuffer", "CutOut", IDR_StencilBuffer_CutOut);
+	AddApp(StencilBufferApps, CreateStencilBufferOutlineApp, "StencilBuffer", "Outline", IDR_StencilBuffer_Outline);
+	AddApp(StencilBufferApps, CreateStencilBufferHighlightApp, "StencilBuffer", "Highlight", IDR_StencilBuffer_Highlight);
+	AddApp(StencilBufferApps, CreateStencilBufferObscuredApp, "StencilBuffer", "Obscured", IDR_StencilBuffer_Obscured);
 	AddGroup(StencilBufferApps);
 
-	// Set random background colours to distinguish similar scenes
+	// Setup text strings and set random background colours to distinguish similar scenes
 	for (int groupNum = 0; groupNum < groups.size(); groupNum++)
 	{
 		srand(groupNum);
-		for (int appNum = 0; appNum < groups[groupNum].size(); appNum++)
+		auto numSubGroups = groups[groupNum].GetNumApps();
+		for (int appNum = 0; appNum < numSubGroups; appNum++)
 		{
-			groups[groupNum][appNum]->SetClearColour({rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 0});
+			auto& app = groups[groupNum].GetApp(appNum);
+			if (fontsEnabled)
+			{
+				std::stringstream appNumStr;
+				appNumStr << '(' << groupNum + 1 << '/' << groups.size() << ") ";
+				std::stringstream appSubNumStr;
+				appSubNumStr << " (" << appNum + 1 << '/' << numSubGroups << ")";
+
+				auto strings = (BasicStrings*)app.GetTextHelper();
+				strings->SetGroupStrings(appNumStr.str(), appSubNumStr.str());
+			}
+
+			app.SetClearColour({ rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 0 });
 		}
 	}
 
 	currentGroup = 0;
 	currentSubgroup = 0;
 }
+
+AppGroups::~AppGroups() = default;
 
 bool AppGroups::CheckKeys(GLFW& window)
 {

@@ -4,9 +4,10 @@
 #include "Application.h"
 #include "Extensions.h"
 #include "WinUtil.h"
+#include "TextHelper.h"
 
 VulkanSystem::VulkanSystem()
-	: physicalDevice(nullptr), deviceProps(nullptr), deviceFeatures{}, queueIndicies{ }, device(nullptr), debugOutputIndent(0), requestedDeviceFeatures{}, fontsEnabled(true)
+	: physicalDevice(nullptr), deviceProps(nullptr), deviceFeatures{}, queueIndicies{ }, device(nullptr), debugOutputIndent(0), requestedDeviceFeatures{}
 {
 }
 
@@ -43,11 +44,11 @@ void VulkanSystem::FindDevice(VkInstance instance, VkSurfaceKHR windowSurface, c
 		debugMarker.Init(instance);
 }
 
-void VulkanSystem::Setup(const Extensions& extensions, VulkanApplication &app)
+void VulkanSystem::SetupSystem(const Extensions& extensions, VulkanApplication &app)
 {
 	VkPhysicalDeviceFeatures requiredDeviceFeatures{};
 	app.GetRequiredDeviceFeatures(deviceFeatures, &requiredDeviceFeatures);
-	if (fontsEnabled)
+	if (app.GetTextHelper()->Enabled())
 		requiredDeviceFeatures.geometryShader = VK_TRUE;	// Fonts use geometry shader
 	if (memcmp(&requiredDeviceFeatures, &requestedDeviceFeatures, sizeof(requiredDeviceFeatures)) != 0)
 		TidyUp();

@@ -46,6 +46,7 @@ private:
 protected:
 	std::string faceName;
 	int fontSize;
+	std::set<char32_t> requiredChars;
 	std::map<char32_t, CharData> charList;
 	bool anyColourGlyphs;
 	std::vector<std::u32string> preloadStrs;

@@ -37,5 +37,3 @@ class TriangleLightApp : public VulkanApplication3DLight
 	Descriptor descriptor;
 	Buffer vertexBuffer;
 };
-
-DECLARE_APP(TriangleLight)

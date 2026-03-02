@@ -20,10 +20,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -151,7 +151,6 @@
     <ClCompile Include="Texture\LoD\TextureLoD.cpp" />
     <ClCompile Include="Texture\Shield\TextureShield.cpp" />
     <ClCompile Include="Triangle\3d\Triangle3d.cpp" />
-    <ClCompile Include="Triangle\Light\TriangleLight.cpp" />
     <ClCompile Include="Triangle\Simple\TriangleSimple.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -287,6 +286,9 @@
     <ClInclude Include="Basics.h" />
     <ClInclude Include="Particles\ParticleSystem.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Triangle\3d\Triangle3d.h" />
+    <ClInclude Include="Triangle\Light\TriangleLight.h" />
+    <ClInclude Include="Triangle\Simple\TriangleSimple.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Basics.rc" />

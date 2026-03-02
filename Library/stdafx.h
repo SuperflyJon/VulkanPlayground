@@ -24,6 +24,7 @@
 #include <array>
 #include <chrono>
 #include <fstream>
+#include <iomanip>
 
 #pragma warning(push)
 #pragma warning(disable:4201 4127 4324 26451 26495)	// Disable some warning in complicated template code

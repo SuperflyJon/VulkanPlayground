@@ -1,6 +1,6 @@
 #pragma once
 
-typedef unsigned char byte;
+#include "Fonts/Freetype.h"
 
 struct IsWhiteSpaceFn
 {
@@ -22,17 +22,6 @@ struct PosData
 	glm::uvec2 textorg, textoff;
 	glm::vec3 colour;
 	int coloured{ -1 };
-};
-
-class Kerning
-{
-public:
-	void SetKerning(char32_t first, char32_t second, int kern) { kerning[first][second] = kern; }
-	int GetKerning(char32_t first, char32_t second) const;
-	void Clear() { kerning.clear(); }
-
-private:
-	std::map<char32_t, std::map<char32_t, int>> kerning;
 };
 
 class Heights
@@ -59,35 +48,31 @@ private:
 class CharData
 {
 public:
-	CharData() : width(0), rows(0), bitmap_left(0), bitmap_top(0), advance(0), offsetX(0), offsetY(0), coloured(false), index(0)
-	{ }
+	CharData(FreeTypeFont::GlyphData&& glyphData)
+		: glyphData(std::move(glyphData)), offsetX(0), offsetY(0)
+	{
+	}
 
-	void Setup(int indexVal, size_t advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data);
 	template<class TYPE> void CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t curRowWidth);
 
-	void Unload() { index = 0; }
-	bool Loaded() const { return index != 0; }
+	void Unload() { glyphData.index = 0; }
+	bool Loaded() const { return glyphData.index != 0; }
 
-	void SetIndex(int val) { index = val; }
-	int GetIndex() const { return index; }
+	void SetIndex(int val) { glyphData.index = val; }
+	int GetIndex() const { return glyphData.index; }
 
-	int LeftBearing() const { return bitmap_left; }
-	int Bitmap_top() const { return bitmap_top; }
-	size_t Advance() const { return advance; }
-	size_t Width() const { return width; }
-	size_t Rows() const { return rows; }
+	int LeftBearing() const { return glyphData.bitmap_left; }
+	int Bitmap_top() const { return glyphData.bitmap_top; }
+	size_t Advance() const { return glyphData.advance; }
+	size_t Width() const { return glyphData.width; }
+	size_t Rows() const { return glyphData.rows; }
 	size_t OffsetX() const { return offsetX; }
 	size_t OffsetY() const { return offsetY; }
-	bool Coloured() const { return coloured; }
+	bool Coloured() const { return glyphData.coloured; }
 
 private:
-	size_t width, rows;
-	int bitmap_left, bitmap_top;
-	size_t advance;
+	FreeTypeFont::GlyphData glyphData;
 	size_t offsetX, offsetY;
-	bool coloured;
-	int index;
-	std::unique_ptr<byte[]> bitdata;
 };
 
 

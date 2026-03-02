@@ -267,12 +267,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Triangle\Simple\TriangleSimple.cpp">
-      <Filter>Triangle\Simple</Filter>
-    </ClCompile>
-    <ClCompile Include="Triangle\3d\Triangle3d.cpp">
-      <Filter>Triangle\3d</Filter>
-    </ClCompile>
     <ClCompile Include="Pipelines\Scene2\PipelinesScene2.cpp">
       <Filter>Pipelines\Scene2</Filter>
     </ClCompile>
@@ -477,9 +471,6 @@
     <ClCompile Include="StencilBuffer\Stencil\StencilBufferStencil.cpp">
       <Filter>StencilBuffer\Stencil</Filter>
     </ClCompile>
-    <ClCompile Include="Triangle\Light\TriangleLight.cpp">
-      <Filter>Triangle\Light</Filter>
-    </ClCompile>
     <ClCompile Include="AppGroups.cpp">
       <Filter>%40Project Files</Filter>
     </ClCompile>
@@ -488,6 +479,12 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>%40Project Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle\Simple\TriangleSimple.cpp">
+      <Filter>Triangle\Simple</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle\3d\Triangle3d.cpp">
+      <Filter>Triangle\3d</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -867,6 +864,15 @@
     </ClInclude>
     <ClInclude Include="Basics.h">
       <Filter>%40Project Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle\Simple\TriangleSimple.h">
+      <Filter>Triangle\Simple</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle\Light\TriangleLight.h">
+      <Filter>Triangle\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle\3d\Triangle3d.h">
+      <Filter>Triangle\3d</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

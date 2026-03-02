@@ -14,30 +14,38 @@ bool CheckKeys(GLFW& window, void* data)
 
 int main()
 {
-	WindowSystem windowSystem;
-	AppGroups appGroups(windowSystem.GetVulkanSystem().fontsEnabled);
-	windowSystem.InitWindow(1200, 800, "Basic Examples", CheckKeys, &appGroups);
-
-	do
+	try
 	{
-		windowSystem.RunApp(appGroups.GetCurrentApp());
-	} while (windowSystem.Running() || appGroups.SceneChanged());
+		AppGroups appGroups;
+		WindowSystem windowSystem(1200, 800, "Basic Examples", CheckKeys, &appGroups);
+		do
+		{
+			auto& app = appGroups.GetCurrentApp();
+			WinUtils::OutputYellow(WinUtils::UTF32toUTF8(app.GetTitle()));
+			app.GetTextHelper()->LoadStrings(app.GetTitle());
 
-	windowSystem.Close();
+			windowSystem.RunApp(app);
+		} while (windowSystem.Running() && appGroups.SceneChanged());
+
+		windowSystem.Close();
+	}
+	catch (std::exception& err)
+	{
+		WinUtils::OutputError("Fatal error: " + std::string(err.what()));
+		return false;
+	}
 }
 
-BasicStrings::BasicStrings(AppGroups& _appGroups, const std::string& _appGroup, const std::string& _appName, int resVal)
-	: appGroups(_appGroups), appGroup(_appGroup), appName(_appName), stringBase(resVal)
+BasicStrings::BasicStrings(int resVal)
+	: stringBase(resVal)
 {}
 BasicStrings::~BasicStrings() = default;
 
-void BasicStrings::LoadStrings()
+void BasicStrings::LoadStrings(const UnicodeString& title)
 {
-	WinUtils::OutputYellow(appGroup + " - " + appName);
-	
 	if (stringBase != 0)
 	{
-		appTitle.Load(stringBase);
+		appTitle = title;
 		appDesc.Load(stringBase + 1);
 		appKeys.Load(stringBase + 2);
 		basicKeyString.Load(IDR_BasicKeys);
@@ -47,31 +55,26 @@ void BasicStrings::LoadStrings()
 		AddPrintString(appDesc);
 		AddPrintString(appKeys);
 		AddPrintString(basicKeyString);
-		generalKeys = UnicodeString(generalKeys.GetUtf32String() + U"|Arrow keys,Change scene");
+		generalKeys = UnicodeString(generalKeys + U"|Arrow keys,Change scene");
 	}
 }
 
-void BasicStrings::PrintText(VulkanApplication& app)
+void BasicStrings::PrintText(bool app3D, bool lightApp)
 {
 	if (!showText)
 		return;
 
 	if (!appTitle.empty())
 	{
-		std::stringstream appNum;
-		appNum << '(' << appGroups.GetCurrentGroupNum() << '/' << appGroups.GetNumGroups() << ") ";
-		PrintString(*mainText, appNum.str(), glm::vec3(0.75f), 0.6f);
+		PrintString(*mainText, groupString, glm::vec3(0.75f), 0.6f);
 		PrintString(*mainText, appTitle, glm::vec3(1, 1, .3), 2.0f);
-		std::stringstream appSubNum;
-		appSubNum << " (" << appGroups.GetCurrentSubgroupNum() << '/' << appGroups.GetNumSubGroups() << ")";
-		PrintString(*mainText, appSubNum.str(), glm::vec3(0.75f), 0.6f);
+		PrintString(*mainText, subGroupString, glm::vec3(0.75f), 0.6f);
 
-		PrintString(*mainText, U"\n\n" + appDesc.GetUtf32String());
-		PrintString(*mainText, U"\n\n" + basicKeyString.GetUtf32String(), glm::vec3(0.75f), 0.6f);
+		PrintString(*mainText, U"\n\n" + appDesc);
+		PrintString(*mainText, U"\n\n" + basicKeyString, glm::vec3(0.75f), 0.6f);
 	}
 
-	if (appKeys.GetUtf32String().size() > 1)
-		PrintKeySection(appKeys);
+	PrintKeySection(appKeys);
 
-	TextHelperBase::PrintText(app);
+	TextHelperBase::PrintText(app3D, lightApp);
 }

@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "TextHelper.h"
 #include "BitmapFont.h"
-#include "Application.h"
 #include "WinUtil.h"
 #include "RenderPass.h"
 
@@ -33,12 +32,11 @@ void ITextHelper::ResetPrints(bool clear)
 
 TypeSetter& TextHelperBase::PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
 {
-	if (!ShowingText() || !typeSetter.Visible())
-		return typeSetter;
-
-	registeredTypeSetters.insert(&typeSetter);
-	typeSetter.GetFont().PrintString(typeSetter, unicodeString.GetUtf32String(), fontColour, scale);
-
+	if (ShowingText() && typeSetter.Visible())
+	{
+		registeredTypeSetters.insert(&typeSetter);
+		typeSetter.GetFont().PrintString(typeSetter, unicodeString, fontColour, scale);
+	}
 	return typeSetter;
 }
 
@@ -132,7 +130,7 @@ void TextHelperBase::PrintKeySection(const UnicodeString& keyString)
 	if (!showText || keyString.empty())
 		return;
 
-	auto keys = Tokenise(keyString.GetUtf32String(), u'|');
+	auto keys = Tokenise(keyString, u'|');
 	if (keys.size() > 1)
 	{
 		if (!keyText->FirstPrint())
@@ -154,18 +152,18 @@ void TextHelperBase::PrintKeySection(const UnicodeString& keyString)
 void TextHelperBase::AddPrintString(Vulkan2DFont& font, const UnicodeString& string)
 {
 	if (showText)
-		font.PreProcessString(string.GetUtf32String());
+		font.PreProcessString(string);
 }
 
-void TextHelperBase::PrintText(VulkanApplication& app)
+void TextHelperBase::PrintText(bool App3D, bool lightApp)
 {
 	PrintKeySection(generalKeys);
-	if (dynamic_cast<VulkanApplication3D*>(&app))
-		PrintKeySection(movementKeys);
-	if (dynamic_cast<VulkanApplication3DLight*>(&app))
-		PrintKeySection(lightKeys);
 
-	PrintString(*mainText, app.GetTitle());
+	if (App3D)
+		PrintKeySection(movementKeys);
+
+	if (lightApp)
+		PrintKeySection(lightKeys);
 }
 
 Vulkan2DFont& ITextHelper::GetFont()
@@ -175,16 +173,18 @@ Vulkan2DFont& ITextHelper::GetFont()
 	return *defaultFont;
 }
 
-void ITextHelper::CreateCommandBuffers(VulkanSystem& system, RenderPasses& renderPasses)
+void ITextHelper::CreateFontCommandBuffers(VulkanSystem& system, RenderPass* fontRenderPass)
 {
-	renderPasses.CreateCmdBuffers(1, system,
-		[this, &system](VkCommandBuffer commandBuffer)
-		{
-			system.DebugStartRegion(commandBuffer, "2dFont Drawing", { 0.0f, 1.0f, 1.0f });
-			for (auto typeSetter : registeredTypeSetters)
-				typeSetter->Draw(system, commandBuffer);
-			system.DebugEndRegion(commandBuffer);
-		}, "FontCmds");
+	if (fontRenderPass)
+	{
+		fontRenderPass->CreateCmdBuffers(system, [this, &system](VkCommandBuffer commandBuffer)
+			{
+				system.DebugStartRegion(commandBuffer, "2dFont Drawing", { 0.0f, 1.0f, 1.0f });
+				for (auto typeSetter : registeredTypeSetters)
+					typeSetter->Draw(system, commandBuffer);
+				system.DebugEndRegion(commandBuffer);
+			}, "FontCmds");
+	}
 }
 
 void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changedFonts, bool* redraw, bool *recreate)
