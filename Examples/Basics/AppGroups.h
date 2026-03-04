@@ -8,8 +8,7 @@ class GLFW;
 class AppList
 {
 public:
-	AppList(const std::string& groupName = "")
-		: name(groupName)
+	AppList()
 	{
 	}
 
@@ -18,8 +17,6 @@ public:
 
 	AppList(AppList&&) = default;
 	AppList& operator=(AppList&&) = default;
-
-	void SetName(const std::string& groupName) { name = groupName; }
 
 	void Add(VulkanApplication& app)
 	{
@@ -32,7 +29,6 @@ public:
 
 private:
 	std::vector<std::unique_ptr<VulkanApplication>> apps;
-	std::string name;
 };
 
 class AppGroups
@@ -115,16 +111,16 @@ protected:
 		groups.push_back(std::move(apps));
 		groupPosition.push_back(0);
 	}
+
 	// Helper functions to create apps
 	struct AppDetails
 	{
-		VulkanApplication *app;
-		std::string appName;
+		VulkanApplication* app;
 		int appResourceID;
 	};
-	void AddApp(AppList& list, VulkanApplication& app, const std::string& groupName, const std::string& appName, int resourceId);
+	void AddApp(AppList& list, VulkanApplication& app, int resourceId);
 	void AddApp(AppList& list, VulkanApplication& (*createFunc)(), const std::string& groupName, const std::string& appName, int resourceId);
-	void AddAppGroup(const std::string& groupName, std::vector<AppDetails> appDetails);
+	void AddAppGroup(std::vector<AppDetails> appDetails);
 
 private:
 	std::vector<AppList> groups;

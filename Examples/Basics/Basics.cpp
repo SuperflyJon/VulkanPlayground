@@ -21,8 +21,8 @@ int main()
 		do
 		{
 			auto& app = appGroups.GetCurrentApp();
-			WinUtils::OutputYellow(WinUtils::UTF32toUTF8(app.GetTitle()));
-			app.GetTextHelper()->LoadStrings(app.GetTitle());
+			app.GetTextHelper()->LoadStrings();
+			WinUtils::OutputYellow(WinUtils::UTF32toUTF8(((BasicStrings*)app.GetTextHelper())->GetTitle()));
 
 			windowSystem.RunApp(app);
 		} while (windowSystem.Running() && appGroups.SceneChanged());
@@ -41,11 +41,11 @@ BasicStrings::BasicStrings(int resVal)
 {}
 BasicStrings::~BasicStrings() = default;
 
-void BasicStrings::LoadStrings(const UnicodeString& title)
+void BasicStrings::LoadStrings()
 {
 	if (stringBase != 0)
 	{
-		appTitle = title;
+		appTitle.Load(stringBase);
 		appDesc.Load(stringBase + 1);
 		appKeys.Load(stringBase + 2);
 		basicKeyString.Load(IDR_BasicKeys);

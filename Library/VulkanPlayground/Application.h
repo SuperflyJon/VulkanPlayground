@@ -118,9 +118,6 @@ public:
 
 	VkFormat GetDepthFormat(VulkanSystem& system);
 
-	void SetTitle(const UnicodeString& name) { title = name; }
-	const UnicodeString& GetTitle() const { return title; }
-
 	std::string GetGroupString();
 	std::string GetSubGroupString();
 

@@ -10,10 +10,8 @@
 #include "Triangle/3d/Triangle3d.h"
 
 // Helper implementation
-void AppGroups::AddApp(AppList& list, VulkanApplication& app, const std::string& groupName, const std::string& appName, int resourceId)
+void AppGroups::AddApp(AppList& list, VulkanApplication& app, int resourceId)
 {
-	app.SetTitle(groupName + " - " + appName);
-
 	if (fontsEnabled)
 		app.SetTextHelper(new BasicStrings(resourceId));
 	else
@@ -21,17 +19,16 @@ void AppGroups::AddApp(AppList& list, VulkanApplication& app, const std::string&
 
 	list.Add(app);
 }
-void AppGroups::AddApp(AppList& list, VulkanApplication& (*createFunc)(), const std::string& groupName, const std::string& appName, int resourceId)
+void AppGroups::AddApp(AppList& list, VulkanApplication& (*createFunc)(), const std::string& /*groupName*/, const std::string& /*appName*/, int resourceId)
 {
-	list.SetName(groupName);
-	AddApp(list, createFunc(), groupName, appName, resourceId);
+	AddApp(list, createFunc(), resourceId);
 }
-void AppGroups::AddAppGroup(const std::string &groupName, std::vector<AppDetails> appDetails)
+void AppGroups::AddAppGroup(std::vector<AppDetails> appDetails)
 {
-	AppList newGroup(groupName);
+	AppList newGroup;
 	for (auto& appDetail : appDetails)
 	{
-		AddApp(newGroup, *appDetail.app, groupName, appDetail.appName, appDetail.appResourceID);
+		AddApp(newGroup, *appDetail.app, appDetail.appResourceID);
 	}
 	AddGroup(newGroup);
 }
@@ -39,10 +36,10 @@ void AppGroups::AddAppGroup(const std::string &groupName, std::vector<AppDetails
 AppGroups::AppGroups()
 	: fontsEnabled(true)
 {
-	AddAppGroup("Triangle", {
-		{new TriangleSimpleApp, "Simple", IDR_Triangle_Simple},
-		{new Triangle3dApp, "3d", IDR_Triangle_3d},
-		{new TriangleLightApp, "Light", IDR_Triangle_Light}
+	AddAppGroup( {
+		{new TriangleSimpleApp, IDR_Triangle_Simple},
+		{new Triangle3dApp, IDR_Triangle_3d},
+		{new TriangleLightApp, IDR_Triangle_Light}
 	});
 
 	AppList PipelinesApps;

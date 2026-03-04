@@ -13,7 +13,7 @@ public:
 	void Tidy(VulkanSystem& system) override;
 	void ResetPrints(bool clear);
 
-	virtual void LoadStrings(const UnicodeString& /*title*/) {}
+	virtual void LoadStrings() {}
 	virtual void SetupText(VkExtent2D /*workingExtent*/) {}
 	virtual void PrintKeySection(const UnicodeString& /*keyString*/) {}
 	virtual void PrintText(bool /*App3D*/, bool /*lightApp*/) {}

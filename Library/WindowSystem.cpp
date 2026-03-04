@@ -125,7 +125,6 @@ void WindowSystem::RunWindowed(int width, int height, const std::string& name, V
 {
 	WindowSystem windowSystem(width, height, name);
 		
-	app.SetTitle(name);
 	do
 	{
 		windowSystem.RunApp(app);
