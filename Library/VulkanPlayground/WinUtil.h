@@ -2,6 +2,7 @@
 
 namespace WinUtils
 {
+	void EnableUnicodeConsoleOutput();
 	void OutputError(const std::string& text);
 	void OutputWarning(const std::string& text);
 	void OutputBlue(const std::string& text);

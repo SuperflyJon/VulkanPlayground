@@ -22,8 +22,7 @@ public:
 
 	void ChangeFont(const std::string& faceName, int fontSize);
 
-	void PreProcessString(const std::u32string& text);
-	void PrintString(TypeSetter& typeSetter, const std::u32string& string, const glm::vec3 &fontColour, float scale);
+	void CheckLayout(TypeSetter& typeSetter);
 
 	const CharData& GetChar(char32_t character) const;
 	int GetKerning(char32_t first, char32_t second) const;
@@ -32,16 +31,17 @@ public:
 	void ClearTypeSetters(VulkanSystem& system);
 
 	virtual bool IsValid() const = 0;
-	bool UnexpectedChars() const { return unexpectedChars; }
-	void Reset() { unexpectedChars = false; }
+	bool UnexpectedChars() const { return !requiredChars.empty(); }
+	void Reset() { requiredChars.clear(); }
 
 private:
 	void LoadFont();
 	uint32_t CalculateTextureWidth();
 	uint32_t CalculateTextureHeight(Packer& packer);
 	void CreateFontTexture();
+public:
 	void InvalidateFont() { pixelData.TidyUp(); }
-	bool AddCharacters(const std::u32string& text, bool showMissingChars = false);
+	bool AddCharacters(const std::u32string& text);
 
 protected:
 	std::string faceName;
@@ -49,11 +49,9 @@ protected:
 	std::set<char32_t> requiredChars;
 	std::map<char32_t, CharData> charList;
 	bool anyColourGlyphs;
-	std::vector<std::u32string> preloadStrs;
 	std::vector<std::unique_ptr<TypeSetter>> typeSetters;
 	PixelData pixelData;
 	std::unique_ptr<Kerning> kerning;
-	bool unexpectedChars = false;
 };
 
 class Vulkan2DFont : public FontData
@@ -83,6 +81,9 @@ private:
 class TypeSetter : public ITidy
 {
 public:
+	bool OutOfDate();
+	void PrintStringInternal(const std::u32string& string, const glm::vec3& fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
+
 	static const size_t TYPESET_PADDING = 5;
 
 	TypeSetter(FontData& fontData, size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE);
@@ -95,7 +96,7 @@ public:
 	void AddExtraBuffer(size_t amount) { extraBuffer = amount; }
 
 	bool PrintExpected(const std::u32string& string, const glm::vec3& fontColour, float scale);
-	void LayoutHorizontal(std::u32string text, const glm::vec3 &colour, float scale);
+	void LayoutHorizontal(std::u32string text, float scale, std::vector<float>& xVals);
 	bool LayoutVertical(VulkanSystem& system);
 	void Draw(VulkanSystem& system, VkCommandBuffer commandBuffer);
 	void UpdateBlankSpace(size_t pixels);
@@ -116,6 +117,7 @@ public:
 		std::u32string text;
 		glm::vec3 colour;
 		float scale;
+		FontData* font;
 		std::vector<float> xVals;
 	};
 	const std::vector<PrintInfo>& GetPrints() { return prints; }
@@ -130,6 +132,7 @@ protected:
 	AddPrintReturn AddPrint(std::u32string& text, float scale, float* xVals);
 
 private:
+public:
 	FontData& fontData;
 	bool inUse, lastInUse;
 	size_t stringCheckNum;

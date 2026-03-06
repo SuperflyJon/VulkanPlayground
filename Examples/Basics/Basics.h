@@ -21,7 +21,7 @@ public:
 
 private:
 	int stringBase;
-	std::string groupString, subGroupString;
+	UnicodeString groupString, subGroupString;
 
 	UnicodeString basicKeyString, appTitle, appDesc, appKeys;
 };

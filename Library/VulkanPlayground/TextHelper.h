@@ -18,7 +18,7 @@ public:
 	virtual void PrintKeySection(const UnicodeString& /*keyString*/) {}
 	virtual void PrintText(bool /*App3D*/, bool /*lightApp*/) {}
 
-	virtual TypeSetter& PrintString(TypeSetter& typeSetter, const UnicodeString& /*unicodeString*/, glm::vec3 /*fontColour*/ = glm::vec3(1.0f, 1.0f, 1.0f), float /*scale*/ = 1.0f) { return typeSetter; }
+	virtual TypeSetter& PrintStringHelper(TypeSetter& typeSetter, const UnicodeString& /*unicodeString*/, glm::vec3 /*fontColour*/ = glm::vec3(1.0f, 1.0f, 1.0f), float /*scale*/ = 1.0f) { return typeSetter; }
 
 	bool ShowingText() const { return showText; }
 	void ToggleShowingText() { showText = !showText; }
@@ -46,10 +46,7 @@ public:
 	void SetupText(VkExtent2D workingExtent) override;
 	void PrintKeySection(const UnicodeString& keyString) override;
 	void PrintText(bool App3D, bool lightApp) override;
-	TypeSetter& PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f) override;
-
-	void AddPrintString(Vulkan2DFont& font, const UnicodeString& string) override;
-	void AddPrintString(const UnicodeString& string) override { AddPrintString(GetFont(), string); }
+	TypeSetter& PrintStringHelper(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f) override;
 
 	bool Enabled() override { return true; }
 

@@ -103,9 +103,9 @@ public:
 	void TidyDescriptors(VulkanSystem& system);
 	void TidyPipelines(VulkanSystem& system);
 
-	TypeSetter& PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
-	TypeSetter& PrintString(Vulkan2DFont& font, int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f, unsigned int width = 1000, unsigned int height = 1000);
-	TypeSetter& PrintString(int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f, unsigned int width = 1000, unsigned int height = 1000);
+	TypeSetter& PrintStringXXX(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
+	TypeSetter& PrintStringXXX(Vulkan2DFont& font, int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f, unsigned int width = 1000, unsigned int height = 1000);
+	TypeSetter& PrintStringXXX(int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f, unsigned int width = 1000, unsigned int height = 1000);
 
 	void ResetPrints(bool clear);
 	void ProcessPrints(VulkanSystem& system, VkExtent2D workingExtent);

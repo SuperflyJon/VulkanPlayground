@@ -373,3 +373,8 @@ std::wstring WinUtils::GetWindowTitle()
 	GetWindowTextW(window, str.data(), size + 1);
 	return str;
 }
+
+void WinUtils::EnableUnicodeConsoleOutput()
+{
+	SetConsoleOutputCP(CP_UTF8);
+}

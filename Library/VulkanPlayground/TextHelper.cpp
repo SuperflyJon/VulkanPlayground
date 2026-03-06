@@ -30,12 +30,12 @@ void ITextHelper::ResetPrints(bool clear)
 		typeSetter->Reset(clear);
 }
 
-TypeSetter& TextHelperBase::PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
+TypeSetter& TextHelperBase::PrintStringHelper(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
 {
 	if (ShowingText() && typeSetter.Visible())
 	{
 		registeredTypeSetters.insert(&typeSetter);
-		typeSetter.GetFont().PrintString(typeSetter, unicodeString, fontColour, scale);
+		typeSetter.PrintStringInternal(unicodeString, fontColour, scale);
 	}
 	return typeSetter;
 }
@@ -50,10 +50,10 @@ TextHelperBase::TextHelperBase()
 
 void TextHelperBase::SetupText(VkExtent2D workingExtent)
 {
-	AddPrintString("fps:(1234567890)vSync");
-	AddPrintString(generalKeys);
-	AddPrintString(movementKeys);
-	AddPrintString(lightKeys);
+	GetFont().AddCharacters(U"fps:(1234567890)vSync");
+	GetFont().AddCharacters(generalKeys);
+	GetFont().AddCharacters(movementKeys);
+	GetFont().AddCharacters(lightKeys);
 
 	if (!mainText)
 		mainText = std::make_unique<TypeSetter>(GetFont());
@@ -134,25 +134,22 @@ void TextHelperBase::PrintKeySection(const UnicodeString& keyString)
 	if (keys.size() > 1)
 	{
 		if (!keyText->FirstPrint())
-			PrintString(*keyText, U"\n").UpdateBlankSpace(2);	// Small gap between groups
+		{
+			PrintStringHelper(*keyText, U"\n");
+			keyText->UpdateBlankSpace(2);	// Small gap between groups
+		}
 
 		auto title = U"\t" + keys[0] + U"\n";
-		PrintString(*keyText, title);
+		PrintStringHelper(*keyText, title);
 		for (auto it = keys.begin() + 1; it != keys.end(); it++)
 		{
 			auto breakPos = it->find(',');
 			auto key = it->substr(0, breakPos);
 			auto keyDesc = it->substr(breakPos + 1);
-			PrintString(*keyText, key, glm::vec3(.7f, .7f, 1), 0.8f);
-			PrintString(*keyText, U" " + keyDesc + U"\n", glm::vec3(0.8f), 0.8f);
+			PrintStringHelper(*keyText, key, glm::vec3(.7f, .7f, 1), 0.8f);
+			PrintStringHelper(*keyText, U" " + keyDesc + U"\n", glm::vec3(0.8f), 0.8f);
 		}
 	}
-}
-
-void TextHelperBase::AddPrintString(Vulkan2DFont& font, const UnicodeString& string)
-{
-	if (showText)
-		font.PreProcessString(string);
 }
 
 void TextHelperBase::PrintText(bool App3D, bool lightApp)
@@ -194,14 +191,18 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 
 	for (auto typeSetter : registeredTypeSetters)
 	{
+		if (typeSetter->prints.empty())
+			continue;
+
+		auto& font = typeSetter->GetFont();
+		if (font.IsValid() && font.UnexpectedChars())
+			*recreate = true;
+		font.CheckLayout(*typeSetter);
+
 		if (typeSetter->LayoutVertical(system))
 			*redraw = true;
 
-		auto& font = typeSetter->GetFont();
 		if (!font.IsValid())
 			changedFonts.insert((Vulkan2DFont*)&font);
-
-		if (font.IsValid() && font.UnexpectedChars())
-			*recreate = true;
 	}
 }

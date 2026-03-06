@@ -18,12 +18,15 @@ void FontData::LoadFont()
 	AddCharacters(U".…");	// Ensure there is a dot as used for background and … if out of space
 
 	FreeTypeFont font(faceName, fontSize);
+	std::cout << requiredChars.size() << " new chars: ";
 	for (auto& character : requiredChars)
 	{
 		charList.emplace(character, font.LoadGlyphData(character, anyColourGlyphs));
+		std::cout << WinUtils::UTF32toUTF8({ character });
 	}
-	requiredChars.clear();
+	std::cout << "\n";
 
+std::vector<std::u32string> preloadStrs;
 	// Get kerning values
 	for (const auto& text : preloadStrs)
 	{
@@ -70,24 +73,7 @@ TypeSetter& FontData::GetTypeSetter(int x, int y, unsigned int width, unsigned i
 	typeSetters.emplace_back(new TypeSetter(*this, x, y, width, height));
 	return *typeSetters.back();
 }
-/*
-void CharData::Setup(int indexVal, size_t advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data)
-{
-	index = indexVal;
-	advance = advanceVal;
-	width = widthVal;
-	rows = rowsVal;
-	bitmap_left = bitmap_leftVal;
-	bitmap_top = bitmap_topVal;
-	coloured = colouredVal;
 
-	size_t dataSize = (size_t)width * rows;
-	if (coloured)
-		dataSize *= 4;	// rgba data
-	bitdata = std::make_unique<byte[]>(dataSize);
-	memcpy(bitdata.get(), data, dataSize);
-}
-*/
 bool Packer::CalcPackSize(size_t width, size_t height)
 {
 	bool rowFull = curRowWidth + width > rowWidth - padding;
@@ -153,7 +139,8 @@ void CharData::CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, 
 
 		destBuf += rowWidth;
 	}
-	glyphData.bitdata.reset();	// Free bitmap data
+// Can't free this incase we need to recreate a larger bitmap with more characters...
+//glyphData.bitdata.reset();	// Free bitmap data
 }
 
 template<class TYPE>
@@ -308,25 +295,44 @@ void TypeSetter::Draw(VulkanSystem& system, VkCommandBuffer commandBuffer)
 	}
 }
 
-void FontData::PrintString(TypeSetter& typeSetter, const std::u32string& string, const glm::vec3 &fontColour, float scale)
+bool TypeSetter::OutOfDate()
 {
-	if (!typeSetter.PrintExpected(string, fontColour, scale))
+	if (stringCheckNum == INVALID_SIZE)
 	{
-		if (AddCharacters(string, true))
-		{	// Printing something with unexpected characters
-			InvalidateFont();
-			if (IsValid())
-			{
-				unexpectedChars = true;
-				return;	// Need to recreate font
-			}
-		}
-		
-		// Ensure font is loaded
-		if (pixelData.pixels == nullptr)
-			LoadFont();
+		heights->Init();
+		curXpos = -1;
+		return true;
+	}
+	else
+		return false;
+}
 
-		typeSetter.LayoutHorizontal(string, fontColour, scale);
+void TypeSetter::PrintStringInternal(const std::u32string& string, const glm::vec3& fontColour, float scale)
+{
+	PrintInfo printInfo{ string, fontColour, scale, &fontData, {} };
+// Todo pass in printInfo?
+	if (!PrintExpected(printInfo.text, printInfo.colour, printInfo.scale))
+	{
+		if (fontData.AddCharacters(printInfo.text))
+			fontData.InvalidateFont();
+
+		prints.push_back(printInfo);
+	}
+}
+
+void FontData::CheckLayout(TypeSetter& typeSetter)
+{
+	// Ensure font is loaded
+	if (pixelData.pixels == nullptr)
+		LoadFont();
+
+	if (typeSetter.OutOfDate())
+	{
+		for (auto& printInfo : typeSetter.prints)
+		{
+			// Setup xVals for each print
+			typeSetter.LayoutHorizontal(printInfo.text, printInfo.scale, printInfo.xVals);
+		}
 	}
 }
 
@@ -337,9 +343,8 @@ void FontData::ClearTypeSetters(VulkanSystem& system)
 	typeSetters.clear();
 }
 
-bool FontData::AddCharacters(const std::u32string& text, bool showMissingChars)
+bool FontData::AddCharacters(const std::u32string& text)
 {
-	std::u32string newChars;
 	for (auto character : text)
 	{
 		if (character != '\n')
@@ -347,23 +352,11 @@ bool FontData::AddCharacters(const std::u32string& text, bool showMissingChars)
 			if (requiredChars.find(character) == requiredChars.end() && charList.find(character) == charList.end())
 			{	// Add character to be loaded
 				requiredChars.insert(character);
-				newChars.push_back(character);
 			}
 		}
 	}
-	if (showMissingChars && !newChars.empty())
-		std::cout << "Unexpcted characters: " << WinUtils::UTF32toUTF8(newChars) << std::endl;
 
-	return !newChars.empty();
-}
-
-void FontData::PreProcessString(const std::u32string& text)
-{
-	if (std::find(preloadStrs.begin(), preloadStrs.end(), text) == preloadStrs.end())
-	{
-		AddCharacters(text);
-		preloadStrs.push_back(text);
-	}
+	return !requiredChars.empty();
 }
 
 TypeSetter::TypeSetter(FontData& font, size_t x, size_t y, size_t width, size_t height)
@@ -444,7 +437,7 @@ bool TypeSetter::PrintExpected(const std::u32string& string, const glm::vec3 &fo
 				stringCheckNum++;
 				return true;
 			}
-			if ((stringCheckNum == prints.size() - 1) && (checkPrint.text.back() == u'…') && 
+			if ((stringCheckNum == prints.size() - 1) && (checkPrint.text.back() == u'…') &&
 				(string.size() >= checkPrint.text.size() - 1) && (checkPrint.text == string.substr(0, checkPrint.text.size() - 1) + U"…"))
 			{
 				stringCheckNum++;
@@ -456,15 +449,8 @@ bool TypeSetter::PrintExpected(const std::u32string& string, const glm::vec3 &fo
 	if ((stringCheckNum == prints.size()) && truncated)
 		return true;
 
-	// Remove any future prints and replay any that matched
-	auto oldHeights = *heights;
+	// Remove unmatched prints
 	prints.resize(stringCheckNum);
-	std::vector<PrintInfo> previousPrints;
-	previousPrints.swap(prints);
-	for (auto& previousPrint : previousPrints)
-		LayoutHorizontal(previousPrint.text, previousPrint.colour, previousPrint.scale);
-	heights->UpdateSpecialHeights(oldHeights);
-
 	stringCheckNum = INVALID_SIZE;	// Difference in prints
 	return false;
 }
@@ -479,44 +465,46 @@ void TypeSetter::TruncatePreviousPrint()
 	if (prints.empty())
 		return;
 
+	auto& lastPrint = prints.back();
+
 	// Tidy any white space
 	heights->RemoveAnyEmptyLastRows();
-	while (IsWhiteSpace(prints.back().text.back()))
-		prints.back().text.pop_back();
+	while (IsWhiteSpace(lastPrint.text.back()))
+		lastPrint.text.pop_back();
 
 	// Add elipses to previous string
-	float* lastPrintChar = prints.back().xVals.data() + CountNonWhiteSpace(prints.back().text) - 1;
+	float* lastPrintChar = lastPrint.xVals.data() + CountNonWhiteSpace(lastPrint.text) - 1;
 	const auto& elipses = fontData.GetChar(u'…');
 
 	auto WorkoutElipsesPos = [&]()
 	{
-		auto& lastLine = prints.back().text;
+		auto& lastLine = lastPrint.text;
 		if (lastLine.empty())
 			return 0.f;
 
 		auto& charData = fontData.GetChar(lastLine.back());
-		return ConvertPixelCount(-charData.LeftBearing() + charData.Advance() + elipses.LeftBearing(), prints.back().scale);
+		return ConvertPixelCount(-charData.LeftBearing() + charData.Advance() + elipses.LeftBearing(), lastPrint.scale);
 	};
 
-	while (*lastPrintChar - xPos + WorkoutElipsesPos() + (elipses.Width() * prints.back().scale) > maxWidth - TYPESET_PADDING)
+	while (*lastPrintChar - xPos + WorkoutElipsesPos() + (elipses.Width() * lastPrint.scale) > maxWidth - TYPESET_PADDING)
 	{
-		prints.back().text.pop_back();
-		prints.back().xVals.pop_back();
-		if (prints.back().xVals.empty())
+		lastPrint.text.pop_back();
+		lastPrint.xVals.pop_back();
+		if (lastPrint.xVals.empty())
 			break;	// Give up if previous string doesn't fit (unlikely)
 		lastPrintChar--;
 	}
 
 	// Add elipses
 	auto elipsesXpos = *lastPrintChar + WorkoutElipsesPos();
-	prints.back().text.push_back(u'…');
-	prints.back().xVals.push_back(elipsesXpos);
+	lastPrint.text.push_back(u'…');
+	lastPrint.xVals.push_back(elipsesXpos);
 	heights->Update(0, 0, 0, 1, false);	// One extra character
 
-	maxRowWidth = std::max(maxRowWidth, (float)elipsesXpos + (elipses.Width() * prints.back().scale) - TYPESET_PADDING);
+	maxRowWidth = std::max(maxRowWidth, (float)elipsesXpos + (elipses.Width() * lastPrint.scale) - TYPESET_PADDING);
 }
 
-void TypeSetter::LayoutHorizontal(std::u32string text, const glm::vec3 &colour, float scale)
+void TypeSetter::LayoutHorizontal(std::u32string text, float scale, std::vector<float> &xVals)
 {
 	if (truncated || maxWidth == 0 || maxHeight == 0)
 		return;	// Already out of space
@@ -524,7 +512,6 @@ void TypeSetter::LayoutHorizontal(std::u32string text, const glm::vec3 &colour, 
 	auto savedCurXpos = curXpos;
 	auto savedHeights = *heights;
 
-	std::vector<float> xVals;
 	xVals.resize(CountNonWhiteSpace(text));
 
 	AddPrintReturn res;
@@ -570,9 +557,6 @@ void TypeSetter::LayoutHorizontal(std::u32string text, const glm::vec3 &colour, 
 	}
 	if (truncated)
 		xVals.resize(CountNonWhiteSpace(text));
-
-	if (!text.empty())
-		prints.push_back({ text, colour, scale, xVals});
 }
 
 void Heights::Init()
@@ -729,9 +713,8 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scal
 
 	std::vector<float> maxCharHeights, minCharHeights;
 
-	if (prints.empty())
+	if (curXpos == -1)
 	{
-		heights->Init();
 		curXpos = startX;
 	}
 

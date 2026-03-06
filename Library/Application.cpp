@@ -61,11 +61,11 @@ void VulkanApplication::AppSetupObjects(VulkanSystem& system, RenderPasses& rend
 void VulkanApplication3D::AppSetupObjects(VulkanSystem& system, RenderPasses& renderPasses, VkExtent2D workingExtent)
 {	
 // Uncomment to show debug camera details
-//#define SHOW_CAMERA_DETAILS
+#define SHOW_CAMERA_DETAILS
 
 #ifdef SHOW_CAMERA_DETAILS
 	// Preload string buffers + characters for debug prints (to avoid recreating fonts)
-	AddPrintString("WldCamPosYaw:().e-0123456789");
+	GetTextHelper()->GetFont().AddCharacters(U"WldCamPosYaw:().e-0123456789");
 #endif
 
 	VulkanPlayground::SetupProjectionMatrix(mvpUBO().projection, AspectRatio());
@@ -233,8 +233,8 @@ void VulkanApplication3D::AppUpdateScene(VulkanSystem& system, const FPSTimer& f
 	mvpUBO().model = savedModel;
 
 #ifdef SHOW_CAMERA_DETAILS
-	auto &ts = PrintString(5, showFPS ? 90 : 70, "Cam: " + GetCameraPos().GetDebugString());
-	PrintString(ts, "\nWld: " + GetWorldPos().GetDebugString());
+	auto &ts = PrintStringXXX(5, showFPS ? 90 : 70, "Cam: " + GetCameraPos().GetDebugString());
+	PrintStringXXX(ts, "\nWld: " + GetWorldPos().GetDebugString());
 	ts.AddExtraBuffer(50);
 #endif
 }
@@ -433,19 +433,19 @@ bool VulkanApplication::ObjectsCreated(VulkanSystem &system, RenderPasses& rende
 	return objectsCreated; 
 }
 
-TypeSetter& VulkanApplication::PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
+TypeSetter& VulkanApplication::PrintStringXXX(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
 {
-	return GetTextHelper()->PrintString(typeSetter, unicodeString, fontColour, scale);
+	return GetTextHelper()->PrintStringHelper(typeSetter, unicodeString, fontColour, scale);
 }
 
-TypeSetter& VulkanApplication::PrintString(int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale, unsigned int width, unsigned int height)
+TypeSetter& VulkanApplication::PrintStringXXX(int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale, unsigned int width, unsigned int height)
 {
-	return PrintString(GetTextHelper()->GetFont(), x, y, unicodeString, fontColour, scale, width, height);
+	return PrintStringXXX(GetTextHelper()->GetFont(), x, y, unicodeString, fontColour, scale, width, height);
 }
 
-TypeSetter& VulkanApplication::PrintString(Vulkan2DFont& font, int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale, unsigned int width, unsigned int height)
+TypeSetter& VulkanApplication::PrintStringXXX(Vulkan2DFont& font, int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale, unsigned int width, unsigned int height)
 {
-	return PrintString(font.GetTypeSetter(x, y, width, height), unicodeString, fontColour, scale);
+	return PrintStringXXX(font.GetTypeSetter(x, y, width, height), unicodeString, fontColour, scale);
 }
 
 void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& frameTime)
@@ -456,7 +456,7 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 		if (vSync)
 			fpsString += " (vSync)";
 		if (GetTextHelper()->ShowingText())
-			PrintString(10, 30, fpsString);
+			PrintStringXXX(10, 30, fpsString);
 		else
 		{
 			static std::string lastFpsString;
