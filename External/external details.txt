@@ -31,4 +31,4 @@ tinyobjloader (https://github.com/syoyo/tinyobjloader) - Version 1.3.1
 FreeType (https://download.savannah.gnu.org/releases/freetype/) - Version 10.4.2
 	* Extract into freetype sub directory
 	* Open freetype\builds\windows\vc2010\freetype.vcxproj and build release-x64 
-	
+	* Copy freetype.dll do the VulkanPlayground\bin directory

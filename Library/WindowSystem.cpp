@@ -51,7 +51,7 @@ void WindowSystem::RunApp(VulkanApplication& app)
 				continue;	// Loop around to recreate things
 
 			app.UpdateCamera(fpsTimer.LastFrameTime(), window.GetEventData());
-			app.ResetPrints(false);
+			app.ResetPrints();
 			app.AppUpdateScene(system, fpsTimer);
 			app.ProcessPrints(system, swapChain.GetWorkingExtent());
 
@@ -78,7 +78,7 @@ void WindowSystem::RunApp(VulkanApplication& app)
 				minimised = (app.GetWindowWidth() == 0) || (app.GetWindowHeight() == 0);
 				if (!minimised)
 				{
-					window.Hide(); window.Show();	// Workaround issue with GLFW resizing not working quite correctly... (TODO: Try latest GLFW and see if it stil goes wrong)
+	//				window.Hide(); window.Show();	// Workaround issue with GLFW resizing not working quite correctly... (TODO: Try latest GLFW and see if it stil goes wrong - seemns okay now?)
 					app.RecreateObjects();
 				}
 			}

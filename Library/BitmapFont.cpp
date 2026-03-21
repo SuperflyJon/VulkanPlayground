@@ -8,7 +8,7 @@
 #include <numeric>
 #include "BitmapFontInternal.h"
 
-FontData::FontData(const std::string& _faceName, int _fontSize) : faceName(_faceName), fontSize(_fontSize), anyColourGlyphs(false), kerning(new Kerning)
+FontData::FontData(const std::string& _faceName, int _fontSize) : faceName(_faceName), fontSize(_fontSize), anyColourGlyphs(false)
 {
 }
 FontData::~FontData() = default;	// Other object files don't know how big FontData is...
@@ -17,33 +17,35 @@ void FontData::LoadFont()
 {
 	AddCharacters(U".…");	// Ensure there is a dot as used for background and … if out of space
 
-	FreeTypeFont font(faceName, fontSize);
+	FreeTypeFont ft_font(faceName, fontSize);
 	std::cout << requiredChars.size() << " new chars: ";
 	for (auto& character : requiredChars)
 	{
-		charList.emplace(character, font.LoadGlyphData(character, anyColourGlyphs));
+		charList.emplace(character, ft_font.LoadGlyphData(character, anyColourGlyphs));
 		std::cout << WinUtils::UTF32toUTF8({ character });
 	}
 	std::cout << "\n";
 
-std::vector<std::u32string> preloadStrs;
-	// Get kerning values
-	for (const auto& text : preloadStrs)
-	{
-		char32_t lastChar = '\0';
-		for (auto character : text)
-		{
-			if (character == '\n')
-				continue;	// Skip new lines
+	CreateFontTexture();
 
+	kerning.CalcKerning(ft_font, charList);
+}
+
+void FontData::SetupKerning(const std::u32string& text)
+{	// Build up all possible transitions
+	char32_t lastChar = '\0';
+	for (auto character : text)
+	{
+		if (character == '\n')	// Skip new lines
+			lastChar = '\0';
+		else
+		{
 			if (lastChar != '\0')
-				font.CalcKern(*kerning, lastChar, charList.at(lastChar).GetIndex(), character, charList.at(character).GetIndex());
+				kerning.SetKerning(lastChar, character, 0);
 
 			lastChar = character;
 		}
 	}
-
-	CreateFontTexture();
 }
 
 const CharData& FontData::GetChar(char32_t character) const
@@ -57,21 +59,7 @@ const CharData& FontData::GetChar(char32_t character) const
 
 int FontData::GetKerning(char32_t first, char32_t second) const
 {
-	return kerning->GetKerning(first, second);
-}
-
-TypeSetter& FontData::GetTypeSetter(int x, int y, unsigned int width, unsigned int height)
-{
-	for (auto &typeSetter : typeSetters)
-	{
-		if (!typeSetter->InUse())
-		{
-			typeSetter->Init(x, y, width, height, false);
-			return *typeSetter;
-		}
-	}
-	typeSetters.emplace_back(new TypeSetter(*this, x, y, width, height));
-	return *typeSetters.back();
+	return kerning.GetKerning(first, second);
 }
 
 bool Packer::CalcPackSize(size_t width, size_t height)
@@ -150,12 +138,12 @@ void Packer::Pack(CharData& charData, TYPE packBuffer)
 
 	if (curRowWidth + width > rowWidth)
 	{
-		curHeight += heights[curRow];
+		curHeight += packHeights[curRow];
 		curRow++;
 		curRowWidth = padding;
 	}
 
-	charData.CopyBitmapData(packBuffer + (size_t)rowWidth * curHeight, curRowWidth, curHeight, heights[curRow], rowWidth);
+	charData.CopyBitmapData(packBuffer + (size_t)rowWidth * curHeight, curRowWidth, curHeight, packHeights[curRow], rowWidth);
 	curRowWidth += width;
 }
 
@@ -262,7 +250,7 @@ void FontData::ChangeFont(const std::string& _faceName, int _fontSize)
 
 	// Reload characters
 	InvalidateFont();
-	kerning->Clear();
+	kerning.Clear();
 	for (auto& ele : charList)
 		ele.second.Unload();
 }
@@ -274,37 +262,13 @@ void Vulkan2DFont::Draw(VkCommandBuffer commandBuffer, Buffer &vertexBuffer, uin
 	vkCmdDraw(commandBuffer, numChars, 1, 0, 0);
 }
 
-void TypeSetter::Reset(bool clear)
-{
-	lastInUse = inUse;
-	inUse = false;
-	fontData.Reset();
-	if (clear)
-	{
-		prints.clear();
-		stringCheckNum = 0;
-	}
-}
-
 void TypeSetter::Draw(VulkanSystem& system, VkCommandBuffer commandBuffer)
 {
-	if (inUse && !prints.empty())
+	if (!prints.empty())
 	{
 		system.DebugInsertLabel(commandBuffer, WinUtils::UTF32toUTF8(prints[0].text), { 0.0f, 0.0f, 1.0f });
 		((Vulkan2DFont&)fontData).Draw(commandBuffer, vertexBuffer, CurBufCharCount());
 	}
-}
-
-bool TypeSetter::OutOfDate()
-{
-	if (stringCheckNum == INVALID_SIZE)
-	{
-		heights->Init();
-		curXpos = -1;
-		return true;
-	}
-	else
-		return false;
 }
 
 void TypeSetter::PrintStringInternal(const std::u32string& string, const glm::vec3& fontColour, float scale)
@@ -317,22 +281,6 @@ void TypeSetter::PrintStringInternal(const std::u32string& string, const glm::ve
 			fontData.InvalidateFont();
 
 		prints.push_back(printInfo);
-	}
-}
-
-void FontData::CheckLayout(TypeSetter& typeSetter)
-{
-	// Ensure font is loaded
-	if (pixelData.pixels == nullptr)
-		LoadFont();
-
-	if (typeSetter.OutOfDate())
-	{
-		for (auto& printInfo : typeSetter.prints)
-		{
-			// Setup xVals for each print
-			typeSetter.LayoutHorizontal(printInfo.text, printInfo.scale, printInfo.xVals);
-		}
 	}
 }
 
@@ -382,26 +330,28 @@ uint32_t TypeSetter::CurBufCharCount() const
 	return (uint32_t)(vertexBuffer.GetBufferSize() / sizeof(PosData));
 }
 
-void TypeSetter::Init(size_t x, size_t y, size_t width, size_t height, bool reset)
+void TypeSetter::Init(size_t x, size_t y, size_t width, size_t height)
 {
 	xPos = x;
 	yPos = y;
 	maxWidth = std::max((int)width, 0);
 	maxHeight = std::max((int)height, 0);
 	maxRowWidth = 0;
-	if (reset)
-	{
-		inUse = false;
-		lastInUse = false;
-		truncated = false;
-		prints.clear();
-		stringCheckNum = 0;
-	}
+
+	Reset();
+}
+
+void TypeSetter::Reset()
+{
+	truncated = false;
+	prints.clear();
+	stringCheckNum = 0;
 }
 
 void TypeSetter::Tidy(VulkanSystem& system)
 {
 	vertexBuffer.DestroyBuffer(system);
+	Reset();
 }
 
 float ConvertPixelCount(size_t val, float scale)
@@ -422,8 +372,6 @@ void SetData(PosData& data, const CharData& charData, float x, float y, const gl
 
 bool TypeSetter::PrintExpected(const std::u32string& string, const glm::vec3 &fontColour, float scale)
 {
-	inUse = true;	// Print is active
-
 	if (stringCheckNum == INVALID_SIZE)
 		return false;
 
@@ -504,7 +452,7 @@ void TypeSetter::TruncatePreviousPrint()
 	maxRowWidth = std::max(maxRowWidth, (float)elipsesXpos + (elipses.Width() * lastPrint.scale) - TYPESET_PADDING);
 }
 
-void TypeSetter::LayoutHorizontal(std::u32string text, float scale, std::vector<float> &xVals)
+void TypeSetter::LayoutHorizontal(PrintInfo& print)
 {
 	if (truncated || maxWidth == 0 || maxHeight == 0)
 		return;	// Already out of space
@@ -512,10 +460,10 @@ void TypeSetter::LayoutHorizontal(std::u32string text, float scale, std::vector<
 	auto savedCurXpos = curXpos;
 	auto savedHeights = *heights;
 
-	xVals.resize(CountNonWhiteSpace(text));
+	print.xVals.resize(CountNonWhiteSpace(print.text));
 
 	AddPrintReturn res;
-	while ((res = AddPrint(text, scale, xVals.data())) != AddPrintReturn::OKAY)
+	while ((res = AddPrint(print)) != AddPrintReturn::OKAY)
 	{
 		if (res == AddPrintReturn::RETRY_AT_START)
 		{
@@ -531,32 +479,32 @@ void TypeSetter::LayoutHorizontal(std::u32string text, float scale, std::vector<
 			truncated = true;
 			curXpos = savedCurXpos;
 			// Remove previous elipses (if present)
-			if (!text.empty() && text.back() == u'…')
-				text = text.substr(0, text.size() - 1);
+			if (!print.text.empty() && print.text.back() == u'…')
+				print.text = print.text.substr(0, print.text.size() - 1);
 
 			// Reduce string by one character
-			text = text.substr(0, text.size() - 1);
+			print.text = print.text.substr(0, print.text.size() - 1);
 
-			if (text.empty())
+			if (print.text.empty())
 			{	// None of this string fits!
 				TruncatePreviousPrint();
 				return;
 			}
 
-			if (text.back() == ' ')	// Skip spaces when finding break point
-				text = text.substr(0, text.size() - 1);
+			if (print.text.back() == ' ')	// Skip spaces when finding break point
+				print.text = print.text.substr(0, print.text.size() - 1);
 
-			text += u'…';
-			auto newSize = CountNonWhiteSpace(text);
-			if (newSize > xVals.size())
+			print.text += u'…';
+			auto newSize = CountNonWhiteSpace(print.text);
+			if (newSize > print.xVals.size())
 			{	// Truncated at end of text (probably caused by whitespace)
-				assert(xVals.size() == newSize - 1);
-				xVals.resize(CountNonWhiteSpace(text));
+				assert(print.xVals.size() == newSize - 1);
+				print.xVals.resize(CountNonWhiteSpace(print.text));
 			}
 		}
 	}
 	if (truncated)
-		xVals.resize(CountNonWhiteSpace(text));
+		print.xVals.resize(CountNonWhiteSpace(print.text));
 }
 
 void Heights::Init()
@@ -700,7 +648,7 @@ void Heights::MakeHeightsUniform()
 	}
 }
 
-TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scale, float* xVals)
+TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 {
 	char32_t previousChar = '\0';
 	float lastBreakingPos = 0;
@@ -719,7 +667,7 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scal
 	}
 
 	bool beginsAtLineStart = (curXpos == startX);
-	auto startOfCurrentLine = text.begin();
+	auto startOfCurrentLine = print.text.begin();
 
 	auto UpdateHeights = [&]()
 	{
@@ -730,14 +678,14 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scal
 		if (!minCharHeights.empty())
 			curRowMinHeight = *std::min_element(minCharHeights.begin(), minCharHeights.end());
 
-		heights->Update(curRowMaxHeight, curRowMinHeight, scale, charNum - charsAccountedFor, includesSpecialChar);
+		heights->Update(curRowMaxHeight, curRowMinHeight, print.scale, charNum - charsAccountedFor, includesSpecialChar);
 		heights->MakeHeightsUniform();
 
 		includesSpecialChar = false;
 	};
 
-	auto it = text.begin();
-	for (; it != text.end(); it++)
+	auto it = print.text.begin();
+	for (; it != print.text.end(); it++)
 	{
 		auto character = *it;
 		bool newLineChar = (character == '\n');
@@ -749,32 +697,32 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scal
 		if (!newLineChar)
 		{
 			const CharData& charData = fontData.GetChar(character);
-			int kerning = 0;
+			int kerningAdjustment = 0;
 			if (xPixelCount > 0)
 			{	// Not start of line
-				kerning = fontData.GetKerning(previousChar, character);
+				kerningAdjustment = fontData.GetKerning(previousChar, character);
 			}
-			float charStartPos = ConvertPixelCount(xPixelCount + kerning, scale) + (charData.LeftBearing() * scale);
+			float charStartPos = ConvertPixelCount(xPixelCount + kerningAdjustment, print.scale) + (charData.LeftBearing() * print.scale);
 
 			if (!IsWhiteSpace(character))
 			{
-				xVals[charNum] = curXpos + charStartPos;
+				print.xVals[charNum] = curXpos + charStartPos;
 				if (charData.Coloured())
 					includesSpecialChar = true;
 				charNum++;
 			}
 
-			endofCurChar = charStartPos + charData.Width() * scale;
+			endofCurChar = charStartPos + charData.Width() * print.scale;
 			if ((curXpos - startX) + endofCurChar > maxWidth - TYPESET_PADDING * 2)
 			{
 				rowFull = true;
 			}
 			else
 			{
-				xPixelCount += kerning + charData.Advance();
+				xPixelCount += kerningAdjustment + charData.Advance();
 			}
-			maxCharHeights.push_back(charData.Bitmap_top() * scale);
-			minCharHeights.push_back((charData.Bitmap_top() - (int)charData.Rows()) * scale);
+			maxCharHeights.push_back(charData.Bitmap_top() * print.scale);
+			minCharHeights.push_back((charData.Bitmap_top() - (int)charData.Rows()) * print.scale);
 		}
 
 		if (newLineChar || rowFull)
@@ -803,7 +751,7 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scal
 
 						charNum -= removed;
 						it = breakIt;
-						breakIt = text.end();	// Skip if below
+						breakIt = print.text.end();	// Skip if below
 						break;
 					}
 				}
@@ -813,16 +761,16 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scal
 						return AddPrintReturn::RETRY_AT_START;	// Added word doesn't fit - break at start of previous text
 
 					// Start of line, failed to find breaking point - break at previous char
-					if (it == text.begin())
+					if (it == print.text.begin())
 					{
-						text.clear();
+						print.text.clear();
 						break;
 					}
 					it--;
 					charNum--;
 					maxCharHeights.pop_back();
 					minCharHeights.pop_back();
-					maxRowWidth = std::max(maxRowWidth, curOffset + ConvertPixelCount(xPixelCount, scale));
+					maxRowWidth = std::max(maxRowWidth, curOffset + ConvertPixelCount(xPixelCount, print.scale));
 				}
 			}
 			startOfCurrentLine = it + 1;
@@ -849,13 +797,12 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(std::u32string &text, float scal
 
 	if (maxHeight != 0 && heights->GetTotalHeight() > maxHeight)	// exceeded max height
 	{
-		text = std::u32string(text.begin(), it);
+		print.text = std::u32string(print.text.begin(), it);
 		return AddPrintReturn::PRINT_TOO_BIG;
 	}
 
 	maxRowWidth = std::max(maxRowWidth, (curXpos - startX) + endofCurChar);
-	curXpos += ConvertPixelCount(xPixelCount, scale);
-	xPixelCount = 0;
+	curXpos += ConvertPixelCount(xPixelCount, print.scale);
 
 	return AddPrintReturn::OKAY;
 }
@@ -874,10 +821,12 @@ void SetupBackdrop(PosData& data, const CharData& charData, size_t x, size_t y, 
 bool TypeSetter::LayoutVertical(VulkanSystem& system)
 {
 	truncated = false;
-	bool redraw = (inUse != lastInUse);
-	bool noChange = stringCheckNum == prints.size();
-	stringCheckNum = 0;
-	if (!inUse || prints.empty() || noChange)
+	bool redraw = stringCheckNum != prints.size();
+
+	if (stringCheckNum != INVALID_SIZE)
+		prints.resize(stringCheckNum);
+
+	if (prints.empty())
 		return redraw;	// Redraw if visibility changed
 
 	heights->RemoveAnyEmptyLastRows();
@@ -957,5 +906,26 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 		}
 	}
 
+	return redraw;
+}
+
+bool TypeSetter::LayoutStrings(VulkanSystem& system)
+{
+	bool redraw = false;
+
+	if (stringCheckNum != prints.size())
+	{
+		heights->Init();
+		curXpos = -1;
+
+		for (auto& print : prints)
+		{
+			// Setup xVals for each print
+			LayoutHorizontal(print);
+		}
+		// Sort out vertical layout
+		if (LayoutVertical(system))
+			redraw = true;
+	}
 	return redraw;
 }

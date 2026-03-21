@@ -60,9 +60,6 @@ void BasicStrings::LoadStrings()
 
 void BasicStrings::PrintText(bool app3D, bool lightApp)
 {
-	if (!showText)
-		return;
-
 	if (!appTitle.empty())
 	{
 		PrintStringHelper(*mainText, groupString, glm::vec3(0.75f), 0.6f);

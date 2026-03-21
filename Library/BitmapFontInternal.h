@@ -91,7 +91,7 @@ public:
 		rowWidth = textureWidth;
 		padding = edgePadding;
 		Reset();
-		heights.clear();
+		packHeights.clear();
 	}
 	void Reset()
 	{
@@ -108,7 +108,7 @@ public:
 	{
 		curRowMaxHeight = (int)(curRowMaxHeight * scale);
 		curHeight += curRowMaxHeight;
-		heights.push_back(curRowMaxHeight);
+		packHeights.push_back(curRowMaxHeight);
 		curRowMaxHeight = 0;
 		curRow++;
 	}
@@ -125,7 +125,19 @@ public:
 	size_t curRowWidth;
 	size_t curRowMaxHeight;
 	size_t curHeight;
-	std::vector<size_t> heights;
+	std::vector<size_t> packHeights;
 
 	size_t padding;
+};
+
+class Kerning
+{
+public:
+	void SetKerning(char32_t first, char32_t second, int kern) { kerning[first][second] = kern; }
+	int GetKerning(char32_t first, char32_t second) const;
+	void Clear() { kerning.clear(); }
+	void CalcKerning(FreeTypeFont& ft_font, const std::map<char32_t, CharData>& charData);
+
+private:
+	std::map<char32_t, std::map<char32_t, int>> kerning;
 };

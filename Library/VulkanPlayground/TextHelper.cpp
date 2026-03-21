@@ -4,6 +4,7 @@
 #include "BitmapFont.h"
 #include "WinUtil.h"
 #include "RenderPass.h"
+#include "Fonts/Freetype.h"
 
 ITextHelper::ITextHelper()
  : showText(true), defaultFont(nullptr)
@@ -24,10 +25,13 @@ void ITextHelper::Tidy(VulkanSystem& system)
 	registeredTypeSetters.clear();
 }
 
-void ITextHelper::ResetPrints(bool clear)
+void ITextHelper::ResetPrints()
 {
 	for (auto typeSetter : registeredTypeSetters)
-		typeSetter->Reset(clear);
+	{
+		typeSetter->stringCheckNum = 0;
+		typeSetter->GetFont().Reset();
+	}
 }
 
 TypeSetter& TextHelperBase::PrintStringHelper(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
@@ -127,9 +131,6 @@ std::vector<std::u32string> Tokenise(const std::u32string& source, char32_t deli
 
 void TextHelperBase::PrintKeySection(const UnicodeString& keyString)
 {
-	if (!showText || keyString.empty())
-		return;
-
 	auto keys = Tokenise(keyString, u'|');
 	if (keys.size() > 1)
 	{
@@ -189,20 +190,56 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 	*redraw = false;
 	*recreate = false;
 
+	std::set<FontData*> fontsInuse;
 	for (auto typeSetter : registeredTypeSetters)
 	{
-		if (typeSetter->prints.empty())
-			continue;
-
-		auto& font = typeSetter->GetFont();
-		if (font.IsValid() && font.UnexpectedChars())
-			*recreate = true;
-		font.CheckLayout(*typeSetter);
-
-		if (typeSetter->LayoutVertical(system))
-			*redraw = true;
-
-		if (!font.IsValid())
-			changedFonts.insert((Vulkan2DFont*)&font);
+		for (auto& print : typeSetter->prints)
+		{
+			fontsInuse.insert(print.font);
+		}
 	}
+
+	for (auto font : fontsInuse)
+	{
+		if (font->IsValid() && font->UnexpectedChars())
+		{
+			*recreate = true;
+			for (auto typeSetter : registeredTypeSetters)
+			{
+				if (&typeSetter->GetFont() == font)
+					typeSetter->Invalidate();
+			}
+		}
+
+		// Ensure font is loaded
+		if (!font->Loaded())
+		{
+			// Note all the possible kernings
+			for (auto typeSetter : registeredTypeSetters)
+			{
+				for (auto& print : typeSetter->prints)
+				{
+					if (font == print.font)
+						font->SetupKerning(print.text);
+				}
+			}
+
+			font->LoadFont();
+		}
+
+		if (!font->IsValid())
+			changedFonts.insert(static_cast<Vulkan2DFont*>(font));
+	}
+
+	for (auto typeSetter : registeredTypeSetters)
+	{
+		if (typeSetter->LayoutStrings(system))
+			*redraw = true;
+/*
+This code is still in LayoutVertical - check what each bit does and do it here or there
+E.g. what is the truncated flag all about
+*/
+typeSetter->truncated = false;
+	}
+
 }

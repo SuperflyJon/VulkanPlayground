@@ -4,6 +4,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "WinUtil.h"
+#include "BitmapFontInternal.h"
 
 constexpr char32_t TofuChar = 0x000025A1;	// Tofu unfound character
 constexpr char32_t UnicodeReplacementChar = 0xFFFD;	// Replacement character for invalid unicode sequences
@@ -253,14 +254,9 @@ FreeTypeFont::GlyphData FreeTypeFont::LoadGlyphData(char32_t character, bool& an
 	return { glyph->glyph_index, advance, glyph->bitmap.width, glyph->bitmap.rows, glyph->bitmap_left, glyph->bitmap_top, coloured, glyph->bitmap.buffer };
 }
 
-void FreeTypeFont::CalcKern(Kerning& kerning, char32_t firstChar, int firstGlyphIndex, char32_t secondChar, int secondGlyphIndex)
+int FreeTypeFont::CalcKern(int firstChar, int secondChar)
 {
-	if (firstGlyphIndex != 0 && secondGlyphIndex != 0 && kerning.GetKerning(firstChar, secondChar) == 0)
-	{
-		int kernAdvance = m_internal->GetKerning(fontNames.front(), firstGlyphIndex, secondGlyphIndex);	// Use main font for kerning calculations
-		if (kernAdvance != 0)
-			kerning.SetKerning(firstChar, secondChar, kernAdvance);
-	}
+	return m_internal->GetKerning(fontNames.front(), firstChar, secondChar);	// Use main font for kerning calculations
 }
 
 FreeTypeFont::GlyphData::GlyphData(unsigned int indexVal, long advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data)
@@ -278,6 +274,34 @@ FreeTypeFont::GlyphData::GlyphData(unsigned int indexVal, long advanceVal, size_
 		dataSize *= 4;	// rgba data
 	bitdata = std::make_unique<byte[]>(dataSize);
 	memcpy(bitdata.get(), data, dataSize);
+}
+
+void Kerning::CalcKerning(FreeTypeFont& ft_font, const std::map<char32_t, CharData>& charData)
+{
+	for (auto itOuter = kerning.begin(); itOuter != kerning.end(); )
+	{
+		const auto& firstIndex = charData.at(itOuter->first).GetIndex();
+
+		auto& innerMap = itOuter->second;
+		for (auto itInner = innerMap.begin(); itInner != innerMap.end(); )
+		{
+			int kern = ft_font.CalcKern(firstIndex, charData.at(itInner->first).GetIndex());
+			if (kern == 0)
+			{
+				itInner = innerMap.erase(itInner); // returns next iterator
+			}
+			else
+			{
+				itInner->second = kern;
+				++itInner;
+			}
+		}
+
+		if (innerMap.empty())
+			itOuter = kerning.erase(itOuter);	// Remove empty inner maps
+		else
+			++itOuter;
+	}
 }
 
 int Kerning::GetKerning(char32_t first, char32_t second) const

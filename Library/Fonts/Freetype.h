@@ -5,17 +5,6 @@ typedef void * GlyphPtr;
 
 class FreeTypeInternal;
 
-class Kerning
-{
-public:
-	void SetKerning(char32_t first, char32_t second, int kern) { kerning[first][second] = kern; }
-	int GetKerning(char32_t first, char32_t second) const;
-	void Clear() { kerning.clear(); }
-
-private:
-	std::map<char32_t, std::map<char32_t, int>> kerning;
-};
-
 class FreeTypeFont
 {
 public:
@@ -36,7 +25,7 @@ public:
 
 	GlyphData LoadGlyphData(char32_t character, bool& anyColourGlyphs);
 
-	void CalcKern(Kerning& kerning, char32_t firstChar, int firstGlyphIndex, char32_t secondChar, int secondGlyphIndex);
+	int CalcKern(int firstChar, int secondChar);
 
 protected:
 	void FindFontNames(const std::string& faceName);

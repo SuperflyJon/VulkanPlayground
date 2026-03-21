@@ -35,6 +35,8 @@ class ITextHelper;
 class VulkanApplication : public ITidy
 {
 public:
+	bool testPrints[5] = {};
+
 	VulkanApplication();
 	virtual ~VulkanApplication();
 
@@ -103,11 +105,7 @@ public:
 	void TidyDescriptors(VulkanSystem& system);
 	void TidyPipelines(VulkanSystem& system);
 
-	TypeSetter& PrintStringXXX(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
-	TypeSetter& PrintStringXXX(Vulkan2DFont& font, int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f, unsigned int width = 1000, unsigned int height = 1000);
-	TypeSetter& PrintStringXXX(int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f, unsigned int width = 1000, unsigned int height = 1000);
-
-	void ResetPrints(bool clear);
+	void ResetPrints();
 	void ProcessPrints(VulkanSystem& system, VkExtent2D workingExtent);
 
 	virtual void AppSetupObjects(VulkanSystem& system, RenderPasses& renderPasses, VkExtent2D workingExtent);
@@ -117,9 +115,6 @@ public:
 	void SetClearColour(const glm::vec4& val) { clearColour = val; }
 
 	VkFormat GetDepthFormat(VulkanSystem& system);
-
-	std::string GetGroupString();
-	std::string GetSubGroupString();
 
 protected:
 	int windowWidth, windowHeight;
@@ -139,6 +134,9 @@ protected:
 	RenderPass* fontRenderPass;
 	std::unique_ptr<ITextHelper> textHelper;
 	UnicodeString title;
+
+TypeSetter& GetTestText();
+TypeSetter *testText = nullptr;
 };
 
 class VulkanApplication3D : virtual public VulkanApplication

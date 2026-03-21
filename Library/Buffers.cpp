@@ -78,6 +78,7 @@ void Buffer::Create(VulkanSystem& system, VkDeviceSize _size, VkBufferUsageFlags
 void Buffer::FreeBufferInternal(VulkanSystem& system)
 {
 	vkDestroyBuffer(system.GetDevice(), buffer, nullptr);
+	buffer = VK_NULL_HANDLE;
 }
 
 BufferManager::BufferManager()

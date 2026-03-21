@@ -12,6 +12,7 @@
 #include "BitmapFont.h"
 #include "Model.h"
 #include "FrameTimer.h"
+#include "TextHelper.h"
 
 VulkanApplication::VulkanApplication()
 	: windowWidth(0), windowHeight(0), objectsCreated(false), redrawScene(false), resetScene(true), showFPS(false), vSync(true),
@@ -41,7 +42,7 @@ void VulkanApplication::SetupWindowObjects(SwapChain& swapChain, VkSurfaceKHR wi
 	{	// Use separate render pass as main one might not be compatible
 		fontRenderPass = &renderPasses.NewRenderPass();
 		fontRenderPass->AddColourAttachment(swapChain.GetImageFormat(), "Fonts", VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-		ResetPrints(true);
+		ResetPrints();
 	}
 
 	swapChain.CreateFrameBuffers(system, renderPasses, GetDepthFormat(system), "Application");
@@ -52,9 +53,19 @@ void VulkanApplication::SetupWindowObjects(SwapChain& swapChain, VkSurfaceKHR wi
 	objectsCreated = true;
 }
 
+TypeSetter& VulkanApplication::GetTestText()
+{
+	if (!testText)
+		testText = new TypeSetter(GetTextHelper()->GetFont());
+	return *testText;
+}
+
 void VulkanApplication::AppSetupObjects(VulkanSystem& system, RenderPasses& renderPasses, VkExtent2D workingExtent)
 {
 	GetTextHelper()->SetupText(workingExtent);
+
+	GetTestText().Init(5, workingExtent.height - 5, workingExtent.width - 10, workingExtent.height - 10);
+
 	SetupObjects(system, renderPasses, workingExtent);
 }
 
@@ -233,9 +244,10 @@ void VulkanApplication3D::AppUpdateScene(VulkanSystem& system, const FPSTimer& f
 	mvpUBO().model = savedModel;
 
 #ifdef SHOW_CAMERA_DETAILS
-	auto &ts = PrintStringXXX(5, showFPS ? 90 : 70, "Cam: " + GetCameraPos().GetDebugString());
-	PrintStringXXX(ts, "\nWld: " + GetWorldPos().GetDebugString());
-	ts.AddExtraBuffer(50);
+	static TypeSetter camTS(GetTextHelper()->GetFont(), 5, 90, 1000, 1000);
+	GetTextHelper()->PrintStringHelper(camTS, "Cam: " + GetCameraPos().GetDebugString());
+	GetTextHelper()->PrintStringHelper(camTS, "\nWld: " + GetWorldPos().GetDebugString());
+	camTS.AddExtraBuffer(50);
 #endif
 }
 
@@ -389,6 +401,24 @@ void VulkanApplication::AppProcessKeyPresses(const EventData& eventData)
 	{
 		resetScene = true;
 	}
+
+if (eventData.KeyPressed('1'))
+{
+	testPrints[1] = !testPrints[1];
+}
+if (eventData.KeyPressed('2'))
+{
+	testPrints[2] = !testPrints[2];
+}
+if (eventData.KeyPressed('3'))
+{
+	testPrints[3] = !testPrints[3];
+}
+if (eventData.KeyPressed('4'))
+{
+	testPrints[4] = !testPrints[4];
+}
+
 	ProcessKeyPresses(eventData);
 }
 
@@ -397,9 +427,9 @@ void VulkanApplication::AppProcessMouseMovement(const MouseData& mouseData)
 	ProcessMouseMovement(mouseData);
 }
 
-void VulkanApplication::ResetPrints(bool clear)
+void VulkanApplication::ResetPrints()
 {
-	GetTextHelper()->ResetPrints(clear);
+	GetTextHelper()->ResetPrints();
 }
 
 void VulkanApplication::ProcessPrints(VulkanSystem& system, VkExtent2D workingExtent)
@@ -433,21 +463,6 @@ bool VulkanApplication::ObjectsCreated(VulkanSystem &system, RenderPasses& rende
 	return objectsCreated; 
 }
 
-TypeSetter& VulkanApplication::PrintStringXXX(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
-{
-	return GetTextHelper()->PrintStringHelper(typeSetter, unicodeString, fontColour, scale);
-}
-
-TypeSetter& VulkanApplication::PrintStringXXX(int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale, unsigned int width, unsigned int height)
-{
-	return PrintStringXXX(GetTextHelper()->GetFont(), x, y, unicodeString, fontColour, scale, width, height);
-}
-
-TypeSetter& VulkanApplication::PrintStringXXX(Vulkan2DFont& font, int x, int y, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale, unsigned int width, unsigned int height)
-{
-	return PrintStringXXX(font.GetTypeSetter(x, y, width, height), unicodeString, fontColour, scale);
-}
-
 void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& frameTime)
 {
 	if (showFPS)
@@ -456,7 +471,10 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 		if (vSync)
 			fpsString += " (vSync)";
 		if (GetTextHelper()->ShowingText())
-			PrintStringXXX(10, 30, fpsString);
+		{
+			static TypeSetter fpsTS(GetTextHelper()->GetFont(), 10, 30, 1000, 1000);
+			GetTextHelper()->PrintStringHelper(fpsTS, fpsString);
+		}
 		else
 		{
 			static std::string lastFpsString;
@@ -469,6 +487,15 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 	}
 
 	GetTextHelper()->PrintText(dynamic_cast<VulkanApplication3D*>(this), dynamic_cast<VulkanApplication3DLight*>(this));
+	
+	if (testPrints[1])
+		GetTextHelper()->PrintStringHelper(GetTestText(), "One One One One One One One One One One One One One One One One\n");
+	if (testPrints[2])
+		GetTextHelper()->PrintStringHelper(GetTestText(), "Two\n");
+	if (testPrints[3])
+		GetTextHelper()->PrintStringHelper(GetTestText(), "Three\n");
+	if (testPrints[4])
+		GetTextHelper()->PrintStringHelper(GetTestText(), "Four\n");
 
 	UpdateScene(system, frameTime.LastFrameTime());
 }

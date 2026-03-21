@@ -11,7 +11,7 @@ public:
 	ITextHelper();
 	virtual ~ITextHelper();
 	void Tidy(VulkanSystem& system) override;
-	void ResetPrints(bool clear);
+	void ResetPrints();
 
 	virtual void LoadStrings() {}
 	virtual void SetupText(VkExtent2D /*workingExtent*/) {}
