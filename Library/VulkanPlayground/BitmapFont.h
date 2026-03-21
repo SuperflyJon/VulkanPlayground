@@ -91,7 +91,6 @@ public:
 	void Init(size_t x, size_t y, size_t width, size_t height);
 	void Reset();
 	void Tidy(VulkanSystem& system) override;
-	void AddExtraBuffer(size_t amount) { extraBuffer = amount; }
 
 	bool PrintExpected(const std::u32string& string, const glm::vec3& fontColour, float scale);
 	bool LayoutStrings(VulkanSystem& system);
@@ -122,7 +121,7 @@ public:
 	void Invalidate() { stringCheckNum = INVALID_SIZE; }
 
 protected:
-	void LayoutHorizontal(PrintInfo& print);
+	bool LayoutHorizontal(PrintInfo& print);
 	bool LayoutVertical(VulkanSystem& system);
 	void TruncatePreviousPrint();
 
@@ -143,7 +142,6 @@ public:
 	std::vector<PrintInfo> prints;
 	std::unique_ptr<Heights> heights;
 
-	size_t extraBuffer;
 	Buffer vertexBuffer;
 	void* vertexMemory;
 };

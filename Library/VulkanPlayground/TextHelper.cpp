@@ -235,11 +235,5 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 	{
 		if (typeSetter->LayoutStrings(system))
 			*redraw = true;
-/*
-This code is still in LayoutVertical - check what each bit does and do it here or there
-E.g. what is the truncated flag all about
-*/
-typeSetter->truncated = false;
 	}
-
 }

@@ -247,7 +247,6 @@ void VulkanApplication3D::AppUpdateScene(VulkanSystem& system, const FPSTimer& f
 	static TypeSetter camTS(GetTextHelper()->GetFont(), 5, 90, 1000, 1000);
 	GetTextHelper()->PrintStringHelper(camTS, "Cam: " + GetCameraPos().GetDebugString());
 	GetTextHelper()->PrintStringHelper(camTS, "\nWld: " + GetWorldPos().GetDebugString());
-	camTS.AddExtraBuffer(50);
 #endif
 }
 

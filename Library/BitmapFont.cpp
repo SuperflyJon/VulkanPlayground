@@ -308,7 +308,7 @@ bool FontData::AddCharacters(const std::u32string& text)
 }
 
 TypeSetter::TypeSetter(FontData& font, size_t x, size_t y, size_t width, size_t height)
-	: fontData(font), heights(new Heights()), extraBuffer(0)
+	: fontData(font), heights(new Heights())
 {
 	vertexMemory = nullptr;
 	horizontalAlignment = HorizontalAlignment::Left;
@@ -449,13 +449,13 @@ void TypeSetter::TruncatePreviousPrint()
 	lastPrint.xVals.push_back(elipsesXpos);
 	heights->Update(0, 0, 0, 1, false);	// One extra character
 
-	maxRowWidth = std::max(maxRowWidth, (float)elipsesXpos + (elipses.Width() * lastPrint.scale) - TYPESET_PADDING);
+	maxRowWidth = std::max(maxRowWidth, (float)elipsesXpos - xPos + (elipses.Width() * lastPrint.scale) - TYPESET_PADDING);
 }
 
-void TypeSetter::LayoutHorizontal(PrintInfo& print)
+bool TypeSetter::LayoutHorizontal(PrintInfo& print)
 {
-	if (truncated || maxWidth == 0 || maxHeight == 0)
-		return;	// Already out of space
+	if (maxWidth == 0 || maxHeight == 0)
+		return true;	// Already out of space
 
 	auto savedCurXpos = curXpos;
 	auto savedHeights = *heights;
@@ -487,8 +487,7 @@ void TypeSetter::LayoutHorizontal(PrintInfo& print)
 
 			if (print.text.empty())
 			{	// None of this string fits!
-				TruncatePreviousPrint();
-				return;
+				return false;
 			}
 
 			if (print.text.back() == ' ')	// Skip spaces when finding break point
@@ -505,6 +504,8 @@ void TypeSetter::LayoutHorizontal(PrintInfo& print)
 	}
 	if (truncated)
 		print.xVals.resize(CountNonWhiteSpace(print.text));
+
+	return true;
 }
 
 void Heights::Init()
@@ -795,7 +796,8 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 
 	UpdateHeights();
 
-	if (maxHeight != 0 && heights->GetTotalHeight() > maxHeight)	// exceeded max height
+	if (maxHeight != 0 && heights->GetTotalHeight() > maxHeight - TYPESET_PADDING
+		&& !(it == print.text.end() && previousChar == '\n'))	// exceeded max height
 	{
 		print.text = std::u32string(print.text.begin(), it);
 		return AddPrintReturn::PRINT_TOO_BIG;
@@ -840,8 +842,7 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 		redraw = true;
 		if (vertexBuffer.Created())
 			system.DeviceWaitIdle();	// Probably in use in command buffer
-		else
-			bufferSize += extraBuffer;
+
 		vertexBuffer.Create(system, sizeof(PosData) * bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, "vertexData");
 		vertexMemory = vertexBuffer.Map(system.GetDevice());
 	}
@@ -918,10 +919,25 @@ bool TypeSetter::LayoutStrings(VulkanSystem& system)
 		heights->Init();
 		curXpos = -1;
 
-		for (auto& print : prints)
+		for (auto it = prints.begin(); it != prints.end(); it++)
 		{
 			// Setup xVals for each print
-			LayoutHorizontal(print);
+			bool truncatePrevious = !LayoutHorizontal(*it);
+			if (truncatePrevious)
+			{
+				do
+				{
+					if (it == prints.begin())
+						break;
+
+					it--;
+				} while (it->text.empty() || it->text == U"\n");
+			}
+			if (truncated)
+				prints.resize(it - prints.begin() + 1);	// Remove any prints that don't fit
+
+			if (truncatePrevious)
+				TruncatePreviousPrint();
 		}
 		// Sort out vertical layout
 		if (LayoutVertical(system))
