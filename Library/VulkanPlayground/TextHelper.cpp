@@ -23,10 +23,17 @@ void ITextHelper::Tidy(VulkanSystem& system)
 
 void ITextHelper::ResetPrints()
 {
+	std::set<FontData*> fontsInuse;
 	for (auto typeSetter : registeredTypeSetters)
 	{
+		for (auto& print : typeSetter->prints)
+		{
+			fontsInuse.insert(print.font);
+		}
 		typeSetter->stringCheckNum = 0;
 	}
+	for (auto font : fontsInuse)
+		font->Reset();
 }
 
 TypeSetter& TextHelperBase::PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
