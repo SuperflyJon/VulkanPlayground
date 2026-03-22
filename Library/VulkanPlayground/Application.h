@@ -134,9 +134,6 @@ protected:
 	RenderPass* fontRenderPass;
 	std::unique_ptr<ITextHelper> textHelper;
 	UnicodeString title;
-
-TypeSetter& GetTestText();
-TypeSetter *testText = nullptr;
 };
 
 class VulkanApplication3D : virtual public VulkanApplication

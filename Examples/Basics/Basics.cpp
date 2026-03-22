@@ -62,12 +62,12 @@ void BasicStrings::PrintText(bool app3D, bool lightApp)
 {
 	if (!appTitle.empty())
 	{
-		PrintStringHelper(*mainText, groupString, glm::vec3(0.75f), 0.6f);
-		PrintStringHelper(*mainText, appTitle, glm::vec3(1, 1, .3), 2.0f);
-		PrintStringHelper(*mainText, subGroupString, glm::vec3(0.75f), 0.6f);
+		PrintString(*mainText, groupString, glm::vec3(0.75f), 0.6f);
+		PrintString(*mainText, appTitle, glm::vec3(1, 1, .3), 2.0f);
+		PrintString(*mainText, subGroupString, glm::vec3(0.75f), 0.6f);
 
-		PrintStringHelper(*mainText, U"\n\n" + appDesc);
-		PrintStringHelper(*mainText, U"\n\n" + basicKeyString, glm::vec3(0.75f), 0.6f);
+		PrintString(*mainText, U"\n\n" + appDesc);
+		PrintString(*mainText, U"\n\n" + basicKeyString, glm::vec3(0.75f), 0.6f);
 	}
 
 	PrintKeySection(appKeys);

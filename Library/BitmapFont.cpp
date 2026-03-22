@@ -267,11 +267,12 @@ void TypeSetter::Draw(VulkanSystem& system, VkCommandBuffer commandBuffer)
 	if (!prints.empty())
 	{
 		system.DebugInsertLabel(commandBuffer, WinUtils::UTF32toUTF8(prints[0].text), { 0.0f, 0.0f, 1.0f });
-		((Vulkan2DFont&)fontData).Draw(commandBuffer, vertexBuffer, CurBufCharCount());
+		const Vulkan2DFont& vulkanFont = dynamic_cast<const Vulkan2DFont&>(*prints[0].font);
+		vulkanFont.Draw(commandBuffer, vertexBuffer, CurBufCharCount());
 	}
 }
 
-void TypeSetter::PrintStringInternal(const std::u32string& string, const glm::vec3& fontColour, float scale)
+void TypeSetter::PrintStringInternal(FontData& fontData, const std::u32string& string, const glm::vec3& fontColour, float scale)
 {
 	PrintInfo printInfo{ string, fontColour, scale, &fontData, {} };
 // Todo pass in printInfo?
@@ -282,13 +283,6 @@ void TypeSetter::PrintStringInternal(const std::u32string& string, const glm::ve
 
 		prints.push_back(printInfo);
 	}
-}
-
-void FontData::ClearTypeSetters(VulkanSystem& system)
-{
-	for (auto &typeSetter : typeSetters)
-		typeSetter->Tidy(system);
-	typeSetters.clear();
 }
 
 bool FontData::AddCharacters(const std::u32string& text)
@@ -307,8 +301,8 @@ bool FontData::AddCharacters(const std::u32string& text)
 	return !requiredChars.empty();
 }
 
-TypeSetter::TypeSetter(FontData& font, size_t x, size_t y, size_t width, size_t height)
-	: fontData(font), heights(new Heights())
+TypeSetter::TypeSetter(size_t x, size_t y, size_t width, size_t height)
+	: heights(new Heights())
 {
 	vertexMemory = nullptr;
 	horizontalAlignment = HorizontalAlignment::Left;
@@ -398,7 +392,7 @@ bool TypeSetter::PrintExpected(const std::u32string& string, const glm::vec3 &fo
 		return true;
 
 	// Remove unmatched prints
-	prints.resize(stringCheckNum);
+	TrimPrints(stringCheckNum);
 	stringCheckNum = INVALID_SIZE;	// Difference in prints
 	return false;
 }
@@ -422,7 +416,7 @@ void TypeSetter::TruncatePreviousPrint()
 
 	// Add elipses to previous string
 	float* lastPrintChar = lastPrint.xVals.data() + CountNonWhiteSpace(lastPrint.text) - 1;
-	const auto& elipses = fontData.GetChar(u'…');
+	const auto& elipses = lastPrint.font->GetChar(u'…');
 
 	auto WorkoutElipsesPos = [&]()
 	{
@@ -430,8 +424,8 @@ void TypeSetter::TruncatePreviousPrint()
 		if (lastLine.empty())
 			return 0.f;
 
-		auto& charData = fontData.GetChar(lastLine.back());
-		return ConvertPixelCount(-charData.LeftBearing() + charData.Advance() + elipses.LeftBearing(), lastPrint.scale);
+		auto& charData = lastPrint.font->GetChar(lastLine.back());
+		return ConvertPixelCount(charData.LeftBearing() + charData.Advance() + elipses.LeftBearing(), lastPrint.scale);
 	};
 
 	while (*lastPrintChar - xPos + WorkoutElipsesPos() + (elipses.Width() * lastPrint.scale) > maxWidth - TYPESET_PADDING)
@@ -697,11 +691,11 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 
 		if (!newLineChar)
 		{
-			const CharData& charData = fontData.GetChar(character);
+			const CharData& charData = print.font->GetChar(character);
 			int kerningAdjustment = 0;
 			if (xPixelCount > 0)
 			{	// Not start of line
-				kerningAdjustment = fontData.GetKerning(previousChar, character);
+				kerningAdjustment = print.font->GetKerning(previousChar, character);
 			}
 			float charStartPos = ConvertPixelCount(xPixelCount + kerningAdjustment, print.scale) + (charData.LeftBearing() * print.scale);
 
@@ -826,7 +820,7 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 	bool redraw = stringCheckNum != prints.size();
 
 	if (stringCheckNum != INVALID_SIZE)
-		prints.resize(stringCheckNum);
+		TrimPrints(stringCheckNum);
 
 	if (prints.empty())
 		return redraw;	// Redraw if visibility changed
@@ -863,7 +857,7 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 	if (horizontalAlignment == HorizontalAlignment::Right)
 		horizontalAdjustment = maxWidth - backdropWidth;
 
-	SetupBackdrop(pData[0], fontData.GetChar('.'), xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight());
+	SetupBackdrop(pData[0], prints.begin()->font->GetChar('.'), xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight());
 
 	size_t curRow = 0;
 	size_t endOfCurrentRow = INVALID_SIZE;
@@ -899,7 +893,7 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 					lastRow = curRow;
 				}
 
-				SetData(*pData, fontData.GetChar(character), print.xVals[charNum] + horizontalAdjustment, rowPos, print.colour, print.scale);
+				SetData(*pData, print.font->GetChar(character), print.xVals[charNum] + horizontalAdjustment, rowPos, print.colour, print.scale);
 
 				charNum++;
 				overAllCharCount++;
@@ -934,7 +928,7 @@ bool TypeSetter::LayoutStrings(VulkanSystem& system)
 				} while (it->text.empty() || it->text == U"\n");
 			}
 			if (truncated)
-				prints.resize(it - prints.begin() + 1);	// Remove any prints that don't fit
+				TrimPrints(it - prints.begin() + 1);	// Remove any prints that don't fit
 
 			if (truncatePrevious)
 				TruncatePreviousPrint();
@@ -944,4 +938,9 @@ bool TypeSetter::LayoutStrings(VulkanSystem& system)
 			redraw = true;
 	}
 	return redraw;
+}
+
+void TypeSetter::TrimPrints(size_t newSize)
+{
+	prints.erase(prints.begin() + newSize, prints.end());
 }

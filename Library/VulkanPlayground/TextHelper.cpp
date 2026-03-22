@@ -14,14 +14,10 @@ ITextHelper::~ITextHelper() = default;
 
 void ITextHelper::Tidy(VulkanSystem& system)
 {
-	std::set<Vulkan2DFont*> fonts;
 	for (auto typeSetter : registeredTypeSetters)
 	{
 		typeSetter->Tidy(system);
-		fonts.insert((Vulkan2DFont*)&typeSetter->GetFont());
 	}
-	for (auto font : fonts)
-		font->ClearTypeSetters(system);
 	registeredTypeSetters.clear();
 }
 
@@ -30,16 +26,17 @@ void ITextHelper::ResetPrints()
 	for (auto typeSetter : registeredTypeSetters)
 	{
 		typeSetter->stringCheckNum = 0;
-		typeSetter->GetFont().Reset();
 	}
 }
 
-TypeSetter& TextHelperBase::PrintStringHelper(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
+TypeSetter& TextHelperBase::PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
 {
+	static Vulkan2DFont tempFontData;
+
 	if (ShowingText() && typeSetter.Visible())
 	{
 		registeredTypeSetters.insert(&typeSetter);
-		typeSetter.PrintStringInternal(unicodeString, fontColour, scale);
+		typeSetter.PrintStringInternal(tempFontData, unicodeString, fontColour, scale);
 	}
 	return typeSetter;
 }
@@ -60,10 +57,10 @@ void TextHelperBase::SetupText(VkExtent2D workingExtent)
 	GetFont().AddCharacters(lightKeys);
 
 	if (!mainText)
-		mainText = std::make_unique<TypeSetter>(GetFont());
+		mainText = std::make_unique<TypeSetter>();
 	if (!keyText)
 	{
-		keyText = std::make_unique<TypeSetter>(GetFont());
+		keyText = std::make_unique<TypeSetter>();
 		keyText->SetHorizontalAlignment(HorizontalAlignment::Right);
 	}
 
@@ -136,19 +133,19 @@ void TextHelperBase::PrintKeySection(const UnicodeString& keyString)
 	{
 		if (!keyText->FirstPrint())
 		{
-			PrintStringHelper(*keyText, U"\n");
+			PrintString(*keyText, U"\n");
 			keyText->UpdateBlankSpace(2);	// Small gap between groups
 		}
 
 		auto title = U"\t" + keys[0] + U"\n";
-		PrintStringHelper(*keyText, title);
+		PrintString(*keyText, title);
 		for (auto it = keys.begin() + 1; it != keys.end(); it++)
 		{
 			auto breakPos = it->find(',');
 			auto key = it->substr(0, breakPos);
 			auto keyDesc = it->substr(breakPos + 1);
-			PrintStringHelper(*keyText, key, glm::vec3(.7f, .7f, 1), 0.8f);
-			PrintStringHelper(*keyText, U" " + keyDesc + U"\n", glm::vec3(0.8f), 0.8f);
+			PrintString(*keyText, key, glm::vec3(.7f, .7f, 1), 0.8f);
+			PrintString(*keyText, U" " + keyDesc + U"\n", glm::vec3(0.8f), 0.8f);
 		}
 	}
 }
@@ -206,8 +203,11 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 			*recreate = true;
 			for (auto typeSetter : registeredTypeSetters)
 			{
-				if (&typeSetter->GetFont() == font)
-					typeSetter->Invalidate();
+				for (auto& print : typeSetter->prints)
+				{
+					if (font == print.font)
+						typeSetter->Invalidate();
+				}
 			}
 		}
 

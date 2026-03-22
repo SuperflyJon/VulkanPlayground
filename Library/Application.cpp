@@ -53,18 +53,13 @@ void VulkanApplication::SetupWindowObjects(SwapChain& swapChain, VkSurfaceKHR wi
 	objectsCreated = true;
 }
 
-TypeSetter& VulkanApplication::GetTestText()
-{
-	if (!testText)
-		testText = new TypeSetter(GetTextHelper()->GetFont());
-	return *testText;
-}
+TypeSetter testText;
 
 void VulkanApplication::AppSetupObjects(VulkanSystem& system, RenderPasses& renderPasses, VkExtent2D workingExtent)
 {
 	GetTextHelper()->SetupText(workingExtent);
 
-	GetTestText().Init(5, workingExtent.height - 5, workingExtent.width - 10, workingExtent.height - 10);
+	testText.Init(5, workingExtent.height - 5, workingExtent.width - 10, workingExtent.height - 10);
 
 	SetupObjects(system, renderPasses, workingExtent);
 }
@@ -244,9 +239,9 @@ void VulkanApplication3D::AppUpdateScene(VulkanSystem& system, const FPSTimer& f
 	mvpUBO().model = savedModel;
 
 #ifdef SHOW_CAMERA_DETAILS
-	static TypeSetter camTS(GetTextHelper()->GetFont(), 5, 90, 1000, 1000);
-	GetTextHelper()->PrintStringHelper(camTS, "Cam: " + GetCameraPos().GetDebugString());
-	GetTextHelper()->PrintStringHelper(camTS, "\nWld: " + GetWorldPos().GetDebugString());
+	static TypeSetter camTS(5, 90, 1000, 1000);
+	GetTextHelper()->PrintString(camTS, "Cam: " + GetCameraPos().GetDebugString());
+	GetTextHelper()->PrintString(camTS, "\nWld: " + GetWorldPos().GetDebugString());
 #endif
 }
 
@@ -471,8 +466,8 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 			fpsString += " (vSync)";
 		if (GetTextHelper()->ShowingText())
 		{
-			static TypeSetter fpsTS(GetTextHelper()->GetFont(), 10, 30, 1000, 1000);
-			GetTextHelper()->PrintStringHelper(fpsTS, fpsString);
+			static TypeSetter fpsTS(10, 30, 1000, 1000);
+			GetTextHelper()->PrintString(fpsTS, fpsString);
 		}
 		else
 		{
@@ -488,13 +483,13 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 	GetTextHelper()->PrintText(dynamic_cast<VulkanApplication3D*>(this), dynamic_cast<VulkanApplication3DLight*>(this));
 	
 	if (testPrints[1])
-		GetTextHelper()->PrintStringHelper(GetTestText(), "One One One One One One One One One One One One One One One One\n");
+		GetTextHelper()->PrintString(testText, "One One One One One One One One One One One One One One One One\n");
 	if (testPrints[2])
-		GetTextHelper()->PrintStringHelper(GetTestText(), "Two\n");
+		GetTextHelper()->PrintString(testText, "Two\n");
 	if (testPrints[3])
-		GetTextHelper()->PrintStringHelper(GetTestText(), "Three\n");
+		GetTextHelper()->PrintString(testText, "Three\n");
 	if (testPrints[4])
-		GetTextHelper()->PrintStringHelper(GetTestText(), "Four\n");
+		GetTextHelper()->PrintString(testText, "Four\n");
 
 	UpdateScene(system, frameTime.LastFrameTime());
 }

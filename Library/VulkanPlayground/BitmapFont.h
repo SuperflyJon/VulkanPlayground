@@ -26,8 +26,6 @@ public:
 	int GetKerning(char32_t first, char32_t second) const;
 	void SetupKerning(const std::u32string& text);
 
-	void ClearTypeSetters(VulkanSystem& system);
-
 	virtual bool IsValid() const = 0;
 	bool UnexpectedChars() const { return !requiredChars.empty(); }
 	void Reset() { requiredChars.clear(); }
@@ -49,7 +47,6 @@ protected:
 	std::set<char32_t> requiredChars;
 	std::map<char32_t, CharData> charList;
 	bool anyColourGlyphs;
-	std::vector<std::unique_ptr<TypeSetter>> typeSetters;
 	PixelData pixelData;
 	Kerning kerning;
 };
@@ -58,7 +55,8 @@ class Vulkan2DFont : public FontData
 {
 public:
 	Vulkan2DFont(const std::string& faceName = "Arial", int fontSize = 24) : FontData(faceName, fontSize)
-	{}
+	{
+	}
 
 	void Setup(VulkanSystem& system, VulkanApplication& theApp, VkExtent2D workingExtent, const RenderPass& renderPass, int windowWidth, int windowHeight);
 	void Draw(VkCommandBuffer commandBuffer, Buffer& vertexBuffer, uint32_t numChars) const;
@@ -81,11 +79,11 @@ private:
 class TypeSetter : public ITidy
 {
 public:
-	void PrintStringInternal(const std::u32string& string, const glm::vec3& fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
+	void PrintStringInternal(FontData& fontData, const std::u32string& string, const glm::vec3& fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
 
 	static const size_t TYPESET_PADDING = 5;
 
-	TypeSetter(FontData& fontData, size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE);
+	TypeSetter(size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE);
 	~TypeSetter();
 	void SetHorizontalAlignment(HorizontalAlignment val) { horizontalAlignment = val; }
 	void Init(size_t x, size_t y, size_t width, size_t height);
@@ -102,7 +100,6 @@ public:
 	size_t NumRows() const;
 
 	bool Visible() const { return maxWidth > 0 && maxHeight > 0; }
-	FontData& GetFont() const { return fontData; }
 	float GetRowPos(size_t row) const;
 	uint32_t CurBufCharCount() const;
 	bool FirstPrint() const { return stringCheckNum == 0; }
@@ -127,10 +124,10 @@ protected:
 
 	enum class AddPrintReturn { OKAY, RETRY_AT_START, PRINT_TOO_BIG };
 	AddPrintReturn AddPrint(PrintInfo& print);
+	void TrimPrints(size_t newSize);
 
 private:
 public:
-	FontData& fontData;
 	size_t stringCheckNum;
 	size_t xPos, yPos;
 	HorizontalAlignment horizontalAlignment;
