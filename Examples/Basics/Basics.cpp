@@ -45,7 +45,7 @@ BasicStrings::~BasicStrings() = default;
 
 void BasicStrings::LoadStrings()
 {
-	if (stringBase != 0)
+	if (stringBase != 0 && appTitle.empty())
 	{
 		appTitle.Load(stringBase);
 		appDesc.Load(stringBase + 1);
@@ -63,7 +63,9 @@ void BasicStrings::PrintText(bool app3D, bool lightApp)
 	if (!appTitle.empty())
 	{
 		PrintString(*mainText, groupString, glm::vec3(0.75f), 0.6f);
-		PrintString(*mainText, appTitle, glm::vec3(1, 1, .3), 2.0f);
+		
+		static Vulkan2DFont headingFont("Times New Roman", 48);
+		PrintStringFont(headingFont, *mainText, appTitle, glm::vec3(1, 1, .3));
 		PrintString(*mainText, subGroupString, glm::vec3(0.75f), 0.6f);
 
 		PrintString(*mainText, U"\n\n" + appDesc);

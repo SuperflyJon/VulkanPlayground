@@ -1,4 +1,4 @@
-
+ï»¿
 #include "stdafx.h"
 #include "BitmapFont.h"
 #include "Application.h"
@@ -13,11 +13,43 @@ FontData::FontData(const std::string& _faceName, int _fontSize) : faceName(_face
 }
 FontData::~FontData() = default;	// Other object files don't know how big FontData is...
 
+uint32_t Vulkan2DFont::CurBufCharCount() const
+{
+	return (uint32_t)(vertexBuffer.GetBufferSize() / sizeof(PosData));
+}
+
+PosData& Vulkan2DFont::GetNextPosData(VulkanSystem& system)
+{
+	if (!vertexBuffer.Created() || bufferSize != CurBufCharCount())
+	{
+		if (vertexBuffer.Created())
+			system.DeviceWaitIdle();	// Probably in use in command buffer
+
+		vertexBuffer.Create(system, sizeof(PosData) * bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, "vertexData");
+		vertexMemory = vertexBuffer.Map(system.GetDevice());
+		pData = (PosData*)vertexMemory;
+
+		if (bufferSize < CurBufCharCount())
+		{	// Zero off any extra unused characters
+			for (size_t extra = bufferSize; extra < CurBufCharCount(); extra++)
+			{
+				pData[extra].size = glm::vec2();
+				bufferSize++;
+			}
+		}
+	}
+	if (pData - (PosData*)vertexMemory >= bufferSize)
+		throw std::runtime_error("Buffer overrun accessing print data");
+
+	return *pData++;
+}
+
 void FontData::LoadFont()
 {
-	AddCharacters(U".…");	// Ensure there is a dot as used for background and … if out of space
+	AddCharacters(U".â€¦");	// Ensure there is a dot as used for background and â€¦ if out of space
 
 	FreeTypeFont ft_font(faceName, fontSize);
+
 	std::cout << requiredChars.size() << " new chars: ";
 	for (auto& character : requiredChars)
 	{
@@ -25,6 +57,9 @@ void FontData::LoadFont()
 		std::cout << WinUtils::UTF32toUTF8({ character });
 	}
 	std::cout << "\n";
+
+	ascent = ft_font.GetLineAscent();
+	descent = ft_font.GetLineDescent();
 
 	CreateFontTexture();
 
@@ -255,28 +290,22 @@ void FontData::ChangeFont(const std::string& _faceName, int _fontSize)
 		ele.second.Unload();
 }
 
-void Vulkan2DFont::Draw(VkCommandBuffer commandBuffer, Buffer &vertexBuffer, uint32_t numChars) const
+void Vulkan2DFont::Draw(VulkanSystem& system, VkCommandBuffer commandBuffer)
 {
+	if (bufferSize == 0)
+		return;	// Nothing to draw in this font
+
+	system.DebugInsertLabel(commandBuffer, faceName, { 0.0f, 0.0f, 1.0f });
+
 	vertexBuffer.Bind(commandBuffer);
 	pipeline.Bind(commandBuffer, descriptor);
-	vkCmdDraw(commandBuffer, numChars, 1, 0, 0);
-}
-
-void TypeSetter::Draw(VulkanSystem& system, VkCommandBuffer commandBuffer)
-{
-	if (!prints.empty())
-	{
-		system.DebugInsertLabel(commandBuffer, WinUtils::UTF32toUTF8(prints[0].text), { 0.0f, 0.0f, 1.0f });
-		const Vulkan2DFont& vulkanFont = dynamic_cast<const Vulkan2DFont&>(*prints[0].font);
-		vulkanFont.Draw(commandBuffer, vertexBuffer, CurBufCharCount());
-	}
+	vkCmdDraw(commandBuffer, bufferSize, 1, 0, 0);
 }
 
 void TypeSetter::PrintStringInternal(FontData& fontData, const std::u32string& string, const glm::vec3& fontColour, float scale)
 {
 	PrintInfo printInfo{ string, fontColour, scale, &fontData, {} };
-// Todo pass in printInfo?
-	if (!PrintExpected(printInfo.text, printInfo.colour, printInfo.scale))
+	if (!PrintExpected(printInfo))
 	{
 		if (fontData.AddCharacters(printInfo.text))
 			fontData.InvalidateFont();
@@ -304,7 +333,6 @@ bool FontData::AddCharacters(const std::u32string& text)
 TypeSetter::TypeSetter(size_t x, size_t y, size_t width, size_t height)
 	: heights(new Heights())
 {
-	vertexMemory = nullptr;
 	horizontalAlignment = HorizontalAlignment::Left;
 	Init(x, y, width, height);
 }
@@ -319,11 +347,6 @@ float TypeSetter::GetRowPos(size_t row) const
 	return (int)yPos - (int)heights->GetTotalHeight() + heights->GetRowOffset(row);
 }
 
-uint32_t TypeSetter::CurBufCharCount() const
-{
-	return (uint32_t)(vertexBuffer.GetBufferSize() / sizeof(PosData));
-}
-
 void TypeSetter::Init(size_t x, size_t y, size_t width, size_t height)
 {
 	xPos = x;
@@ -332,25 +355,32 @@ void TypeSetter::Init(size_t x, size_t y, size_t width, size_t height)
 	maxHeight = std::max((int)height, 0);
 	maxRowWidth = 0;
 
-	Reset();
+	Reset(true);
 }
 
-void TypeSetter::Reset()
+void TypeSetter::Reset(bool clearPrints)
 {
 	truncated = false;
-	prints.clear();
 	stringCheckNum = 0;
-}
 
-void TypeSetter::Tidy(VulkanSystem& system)
-{
-	vertexBuffer.DestroyBuffer(system);
-	Reset();
+	if (clearPrints)
+		prints.clear();
 }
 
 float ConvertPixelCount(size_t val, float scale)
 {
 	return ((float)val / 64.0f) * scale;
+}
+
+void SetupBackdrop(PosData& data, const CharData& charData, size_t x, size_t y, size_t backdropWidth, size_t backdropHeight)
+{
+	data.pos = glm::vec2((float)x, (float)y - backdropHeight);
+	data.size = glm::vec2(backdropWidth, backdropHeight);
+	// Make a rougth background effect
+	data.textorg = glm::uvec2((short)charData.OffsetX() + (charData.Width() + 1) / 2, (short)charData.OffsetY());
+	data.textoff = glm::uvec2(1, 1);
+	data.colour = glm::vec3(0.25, 0.25, 0.25);
+	data.coloured = charData.Coloured() ? 1 : 0;
 }
 
 void SetData(PosData& data, const CharData& charData, float x, float y, const glm::vec3 &colour, float scale)
@@ -364,7 +394,7 @@ void SetData(PosData& data, const CharData& charData, float x, float y, const gl
 	data.coloured = charData.Coloured() ? 1 : 0;
 }
 
-bool TypeSetter::PrintExpected(const std::u32string& string, const glm::vec3 &fontColour, float scale)
+bool TypeSetter::PrintExpected(const PrintInfo& printInfo)
 {
 	if (stringCheckNum == INVALID_SIZE)
 		return false;
@@ -372,15 +402,15 @@ bool TypeSetter::PrintExpected(const std::u32string& string, const glm::vec3 &fo
 	if (stringCheckNum < prints.size())
 	{
 		auto& checkPrint = prints[stringCheckNum];
-		if ((checkPrint.colour == fontColour) && (checkPrint.scale == scale))
+		if ((checkPrint.colour == printInfo.colour) && (checkPrint.scale == printInfo.scale) && (checkPrint.font == printInfo.font))
 		{
-			if (checkPrint.text == string)
+			if (checkPrint.text == printInfo.text)
 			{
 				stringCheckNum++;
 				return true;
 			}
-			if ((stringCheckNum == prints.size() - 1) && (checkPrint.text.back() == u'…') &&
-				(string.size() >= checkPrint.text.size() - 1) && (checkPrint.text == string.substr(0, checkPrint.text.size() - 1) + U"…"))
+			if ((stringCheckNum == prints.size() - 1) && (checkPrint.text.back() == u'â€¦') &&
+				(printInfo.text.size() >= checkPrint.text.size() - 1) && (checkPrint.text == printInfo.text.substr(0, checkPrint.text.size() - 1) + U"â€¦"))
 			{
 				stringCheckNum++;
 				truncated = true;
@@ -397,15 +427,16 @@ bool TypeSetter::PrintExpected(const std::u32string& string, const glm::vec3 &fo
 	return false;
 }
 
-void TypeSetter::UpdateBlankSpace(size_t pixels)
-{
-	heights->ChangePreviousEmptyLineHeight(pixels);
-}
-
 void TypeSetter::TruncatePreviousPrint()
 {
-	if (prints.empty())
+	if (prints.size() == 0)
 		return;
+
+	if (prints.size() == 1)
+	{	// There is no previous print...
+		TrimPrints(0);
+		return;
+	}
 
 	auto& lastPrint = prints.back();
 
@@ -416,7 +447,7 @@ void TypeSetter::TruncatePreviousPrint()
 
 	// Add elipses to previous string
 	float* lastPrintChar = lastPrint.xVals.data() + CountNonWhiteSpace(lastPrint.text) - 1;
-	const auto& elipses = lastPrint.font->GetChar(u'…');
+	const auto& elipses = lastPrint.font->GetChar(u'â€¦');
 
 	auto WorkoutElipsesPos = [&]()
 	{
@@ -439,7 +470,7 @@ void TypeSetter::TruncatePreviousPrint()
 
 	// Add elipses
 	auto elipsesXpos = *lastPrintChar + WorkoutElipsesPos();
-	lastPrint.text.push_back(u'…');
+	lastPrint.text.push_back(u'â€¦');
 	lastPrint.xVals.push_back(elipsesXpos);
 	heights->Update(0, 0, 0, 1, false);	// One extra character
 
@@ -473,7 +504,7 @@ bool TypeSetter::LayoutHorizontal(PrintInfo& print)
 			truncated = true;
 			curXpos = savedCurXpos;
 			// Remove previous elipses (if present)
-			if (!print.text.empty() && print.text.back() == u'…')
+			if (!print.text.empty() && print.text.back() == u'â€¦')
 				print.text = print.text.substr(0, print.text.size() - 1);
 
 			// Reduce string by one character
@@ -487,7 +518,7 @@ bool TypeSetter::LayoutHorizontal(PrintInfo& print)
 			if (print.text.back() == ' ')	// Skip spaces when finding break point
 				print.text = print.text.substr(0, print.text.size() - 1);
 
-			print.text += u'…';
+			print.text += u'â€¦';
 			auto newSize = CountNonWhiteSpace(print.text);
 			if (newSize > print.xVals.size())
 			{	// Truncated at end of text (probably caused by whitespace)
@@ -558,7 +589,7 @@ void Heights::Update(float max, float min, float scale, size_t addedChars, bool 
 
 void Heights::RemoveAnyEmptyLastRows()
 {
-	while (numCharsInLine.back() == 0)
+	while (!numCharsInLine.empty() && numCharsInLine.back() == 0)
 	{
 		minHeights.pop_back();
 		maxHeights.pop_back();
@@ -605,42 +636,9 @@ float Heights::GetRowOffset(size_t row) const
 		else if (curRow == row)
 			latestRowHeight = 0;
 
- 		offset += latestRowHeight + TypeSetter::TYPESET_PADDING;
+		offset += latestRowHeight;
 	}
 	return offset;
-}
-
-void Heights::MakeHeightsUniform()
-{
-	if (NumRows() < 2)
-		return;
-
-	size_t firstLine = NumRows() - 1;
-	while (firstLine > 0 && maxScales[firstLine - 1] == maxScales[firstLine])
-		firstLine--;
-
-	if (firstLine == NumRows() - 1)
-		return;
-
-	float lowestMin = 0;
-	float largestMax = 0;
-
-	for (size_t row = firstLine; row < NumRows(); row++)
-	{
-		if (!hasSpecialChars[row])
-		{
-			lowestMin = std::min(lowestMin, minHeights[row]);
-			largestMax = std::max(largestMax, maxHeights[row]);
-		}
-	}
-	for (size_t row = firstLine; row < NumRows(); row++)
-	{
-		if (!hasSpecialChars[row])
-		{
-			minHeights[row] = std::min(lowestMin, minHeights[row]);
-			maxHeights[row] = std::max(largestMax, maxHeights[row]);
-		}
-	}
 }
 
 TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
@@ -654,8 +652,6 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 	bool includesSpecialChar = false;
 	float startX = (float)(xPos + TYPESET_PADDING);
 
-	std::vector<float> maxCharHeights, minCharHeights;
-
 	if (curXpos == -1)
 	{
 		curXpos = startX;
@@ -666,16 +662,9 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 
 	auto UpdateHeights = [&]()
 	{
-		float curRowMaxHeight = 0;
-		if (!maxCharHeights.empty())
-			curRowMaxHeight = *std::max_element(maxCharHeights.begin(), maxCharHeights.end());
-		float curRowMinHeight = 0;
-		if (!minCharHeights.empty())
-			curRowMinHeight = *std::min_element(minCharHeights.begin(), minCharHeights.end());
-
+		float curRowMaxHeight = print.font->Ascent() * print.scale;
+		float curRowMinHeight = print.font->Descent() * print.scale;
 		heights->Update(curRowMaxHeight, curRowMinHeight, print.scale, charNum - charsAccountedFor, includesSpecialChar);
-		heights->MakeHeightsUniform();
-
 		includesSpecialChar = false;
 	};
 
@@ -716,8 +705,6 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 			{
 				xPixelCount += kerningAdjustment + charData.Advance();
 			}
-			maxCharHeights.push_back(charData.Bitmap_top() * print.scale);
-			minCharHeights.push_back((charData.Bitmap_top() - (int)charData.Rows()) * print.scale);
 		}
 
 		if (newLineChar || rowFull)
@@ -741,9 +728,6 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 					if (*breakIt == ' ' || *breakIt == '\t')
 					{	// Break here
 						auto removed = it - breakIt;
-						maxCharHeights.resize(maxCharHeights.size() - removed);
-						minCharHeights.resize(minCharHeights.size() - removed);
-
 						charNum -= removed;
 						it = breakIt;
 						breakIt = print.text.end();	// Skip if below
@@ -763,8 +747,6 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 					}
 					it--;
 					charNum--;
-					maxCharHeights.pop_back();
-					minCharHeights.pop_back();
 					maxRowWidth = std::max(maxRowWidth, curOffset + ConvertPixelCount(xPixelCount, print.scale));
 				}
 			}
@@ -775,9 +757,6 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 				break;	// exceeded max height
 
 			heights->Add();
-
-			maxCharHeights.clear();
-			minCharHeights.clear();
 
 			charsAccountedFor = charNum;
 			xPixelCount = 0;
@@ -803,50 +782,10 @@ TypeSetter::AddPrintReturn TypeSetter::AddPrint(PrintInfo& print)
 	return AddPrintReturn::OKAY;
 }
 
-void SetupBackdrop(PosData& data, const CharData& charData, size_t x, size_t y, size_t backdropWidth, size_t backdropHeight)
+void TypeSetter::Print(VulkanSystem& system, FontData* primaryFont)
 {
-	data.pos = glm::vec2((float)x, (float)y - backdropHeight);
-	data.size = glm::vec2(backdropWidth, backdropHeight);
-	// Make a rougth background effect
-	data.textorg = glm::uvec2((short)charData.OffsetX() + (charData.Width() + 1) / 2, (short)charData.OffsetY());
-	data.textoff = glm::uvec2(1, 1);
-	data.colour = glm::vec3(0.25, 0.25, 0.25);
-	data.coloured = charData.Coloured() ? 1 : 0;
-}
-
-bool TypeSetter::LayoutVertical(VulkanSystem& system)
-{
-	truncated = false;
-	bool redraw = stringCheckNum != prints.size();
-
-	if (stringCheckNum != INVALID_SIZE)
-		TrimPrints(stringCheckNum);
-
 	if (prints.empty())
-		return redraw;	// Redraw if visibility changed
-
-	heights->RemoveAnyEmptyLastRows();
-
-	size_t bufferSize = 1;	// For background character
-	for (auto& print : prints)
-		bufferSize += CountNonWhiteSpace(print.text);
-
-	if (!vertexBuffer.Created() || bufferSize > CurBufCharCount())
-	{
-		redraw = true;
-		if (vertexBuffer.Created())
-			system.DeviceWaitIdle();	// Probably in use in command buffer
-
-		vertexBuffer.Create(system, sizeof(PosData) * bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, "vertexData");
-		vertexMemory = vertexBuffer.Map(system.GetDevice());
-	}
-	PosData* pData = (PosData*)vertexMemory;
-
-	while (bufferSize < CurBufCharCount())
-	{
-		pData[bufferSize].size = glm::vec2();	// Zero off any extra unused characters
-		bufferSize++;
-	}
+		return;
 
 	// Work out background size
 	size_t backdropWidth = (size_t)maxRowWidth + TYPESET_PADDING * 2;
@@ -857,7 +796,7 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 	if (horizontalAlignment == HorizontalAlignment::Right)
 		horizontalAdjustment = maxWidth - backdropWidth;
 
-	SetupBackdrop(pData[0], prints.begin()->font->GetChar('.'), xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight());
+	SetupBackdrop(primaryFont->GetNextPosData(system), primaryFont->GetChar('.'), xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight());
 
 	size_t curRow = 0;
 	size_t endOfCurrentRow = INVALID_SIZE;
@@ -872,8 +811,6 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 		{
 			if (!IsWhiteSpace(character))
 			{
-				pData++;
-
 				if (overAllCharCount == endOfCurrentRow)
 					curRow++;
 
@@ -893,50 +830,60 @@ bool TypeSetter::LayoutVertical(VulkanSystem& system)
 					lastRow = curRow;
 				}
 
-				SetData(*pData, print.font->GetChar(character), print.xVals[charNum] + horizontalAdjustment, rowPos, print.colour, print.scale);
+				SetData(print.font->GetNextPosData(system), print.font->GetChar(character), print.xVals[charNum] + horizontalAdjustment, rowPos, print.colour, print.scale);
 
 				charNum++;
 				overAllCharCount++;
 			}
 		}
 	}
-
-	return redraw;
 }
 
-bool TypeSetter::LayoutStrings(VulkanSystem& system)
+bool TypeSetter::LayoutStrings(FontData* primaryFont)
 {
-	bool redraw = false;
+	heights->Init();
+	curXpos = -1;
+	truncated = false;
 
-	if (stringCheckNum != prints.size())
+	for (auto it = prints.begin(); it != prints.end(); it++)
 	{
-		heights->Init();
-		curXpos = -1;
-
-		for (auto it = prints.begin(); it != prints.end(); it++)
+		// Setup xVals for each print
+		bool truncatePrevious = !LayoutHorizontal(*it);
+		if (truncatePrevious)
 		{
-			// Setup xVals for each print
-			bool truncatePrevious = !LayoutHorizontal(*it);
-			if (truncatePrevious)
+			do
 			{
-				do
-				{
-					if (it == prints.begin())
-						break;
+				if (it == prints.begin())
+					break;
 
-					it--;
-				} while (it->text.empty() || it->text == U"\n");
-			}
-			if (truncated)
-				TrimPrints(it - prints.begin() + 1);	// Remove any prints that don't fit
-
-			if (truncatePrevious)
-				TruncatePreviousPrint();
+				it--;
+			} while (it->text.empty() || it->text == U"\n");
 		}
-		// Sort out vertical layout
-		if (LayoutVertical(system))
-			redraw = true;
+		if (truncated)
+			TrimPrints(it - prints.begin() + 1);	// Remove any prints that don't fit
+
+		if (truncatePrevious)
+			TruncatePreviousPrint();
+
+		if (prints.empty())
+			break;	// Nothing fit...
 	}
+
+	bool redraw = OutOfDate();
+
+	if (stringCheckNum != INVALID_SIZE)
+		TrimPrints(stringCheckNum);
+
+	if (!prints.empty())
+	{
+		heights->RemoveAnyEmptyLastRows();
+
+		for (auto& print : prints)
+			print.font->AddMoreCharacters(CountNonWhiteSpace(print.text));
+
+		primaryFont->AddMoreCharacters(1);	// For background character
+	}
+
 	return redraw;
 }
 

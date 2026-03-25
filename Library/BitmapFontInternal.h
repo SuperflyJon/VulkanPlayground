@@ -37,7 +37,6 @@ public:
 	size_t NumRows() const { return maxHeights.size(); }
 	size_t GetCharsInRow(size_t row) const { return numCharsInLine[row]; }
 	void RemoveAnyEmptyLastRows();
-	void MakeHeightsUniform();
 
 private:
 	std::vector<float> maxHeights, minHeights, maxScales;

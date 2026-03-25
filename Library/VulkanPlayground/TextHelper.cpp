@@ -14,36 +14,30 @@ ITextHelper::~ITextHelper() = default;
 
 void ITextHelper::Tidy(VulkanSystem& system)
 {
+	for (auto font : fontsInuse)
+		font->Tidy(system);
+
 	for (auto typeSetter : registeredTypeSetters)
-	{
-		typeSetter->Tidy(system);
-	}
-	registeredTypeSetters.clear();
+		typeSetter->Reset(true);
 }
 
 void ITextHelper::ResetPrints()
 {
-	std::set<FontData*> fontsInuse;
 	for (auto typeSetter : registeredTypeSetters)
 	{
-		for (auto& print : typeSetter->prints)
-		{
-			fontsInuse.insert(print.font);
-		}
-		typeSetter->stringCheckNum = 0;
+		typeSetter->Reset(false);
 	}
 	for (auto font : fontsInuse)
 		font->Reset();
 }
 
-TypeSetter& TextHelperBase::PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
+TypeSetter& TextHelperBase::PrintStringFont(Vulkan2DFont& font, TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
 {
-	static Vulkan2DFont tempFontData;
-
 	if (ShowingText() && typeSetter.Visible())
 	{
 		registeredTypeSetters.insert(&typeSetter);
-		typeSetter.PrintStringInternal(tempFontData, unicodeString, fontColour, scale);
+		typeSetter.PrintStringInternal(font, unicodeString, fontColour, scale);
+		fontsInuse.insert(&font);
 	}
 	return typeSetter;
 }
@@ -139,10 +133,7 @@ void TextHelperBase::PrintKeySection(const UnicodeString& keyString)
 	if (keys.size() > 1)
 	{
 		if (!keyText->FirstPrint())
-		{
 			PrintString(*keyText, U"\n");
-			keyText->UpdateBlankSpace(2);	// Small gap between groups
-		}
 
 		auto title = U"\t" + keys[0] + U"\n";
 		PrintString(*keyText, title);
@@ -182,8 +173,8 @@ void ITextHelper::CreateFontCommandBuffers(VulkanSystem& system, RenderPass* fon
 		fontRenderPass->CreateCmdBuffers(system, [this, &system](VkCommandBuffer commandBuffer)
 			{
 				system.DebugStartRegion(commandBuffer, "2dFont Drawing", { 0.0f, 1.0f, 1.0f });
-				for (auto typeSetter : registeredTypeSetters)
-					typeSetter->Draw(system, commandBuffer);
+				for (auto font : fontsInuse)
+					font->Draw(system, commandBuffer);
 				system.DebugEndRegion(commandBuffer);
 			}, "FontCmds");
 	}
@@ -194,15 +185,6 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 	*redraw = false;
 	*recreate = false;
 
-	std::set<FontData*> fontsInuse;
-	for (auto typeSetter : registeredTypeSetters)
-	{
-		for (auto& print : typeSetter->prints)
-		{
-			fontsInuse.insert(print.font);
-		}
-	}
-
 	for (auto font : fontsInuse)
 	{
 		if (font->IsValid() && font->UnexpectedChars())
@@ -210,7 +192,7 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 			*recreate = true;
 			for (auto typeSetter : registeredTypeSetters)
 			{
-				for (auto& print : typeSetter->prints)
+				for (auto& print : typeSetter->GetPrints())
 				{
 					if (font == print.font)
 						typeSetter->Invalidate();
@@ -224,7 +206,7 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 			// Note all the possible kernings
 			for (auto typeSetter : registeredTypeSetters)
 			{
-				for (auto& print : typeSetter->prints)
+				for (auto& print : typeSetter->GetPrints())
 				{
 					if (font == print.font)
 						font->SetupKerning(print.text);
@@ -238,9 +220,23 @@ void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changed
 			changedFonts.insert(static_cast<Vulkan2DFont*>(font));
 	}
 
-	for (auto typeSetter : registeredTypeSetters)
+	for (auto checkTS : registeredTypeSetters)
 	{
-		if (typeSetter->LayoutStrings(system))
-			*redraw = true;
+		if (checkTS->OutOfDate())
+		{
+			for (auto font : fontsInuse)
+				font->Reset();
+
+			auto primaryFont = *fontsInuse.begin();
+			for (auto typeSetter : registeredTypeSetters)
+			{
+				if (typeSetter->LayoutStrings(primaryFont))
+					*redraw = true;
+			}
+			for (auto typeSetter : registeredTypeSetters)
+			{
+				typeSetter->Print(system, primaryFont);
+			}
+		}
 	}
 }

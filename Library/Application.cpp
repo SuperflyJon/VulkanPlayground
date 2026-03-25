@@ -1,4 +1,4 @@
-
+﻿
 #include "stdafx.h"
 #include "Application.h"
 #include "System.h"
@@ -396,23 +396,6 @@ void VulkanApplication::AppProcessKeyPresses(const EventData& eventData)
 		resetScene = true;
 	}
 
-if (eventData.KeyPressed('1'))
-{
-	testPrints[1] = !testPrints[1];
-}
-if (eventData.KeyPressed('2'))
-{
-	testPrints[2] = !testPrints[2];
-}
-if (eventData.KeyPressed('3'))
-{
-	testPrints[3] = !testPrints[3];
-}
-if (eventData.KeyPressed('4'))
-{
-	testPrints[4] = !testPrints[4];
-}
-
 	ProcessKeyPresses(eventData);
 }
 
@@ -482,15 +465,6 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 
 	GetTextHelper()->PrintText(dynamic_cast<VulkanApplication3D*>(this), dynamic_cast<VulkanApplication3DLight*>(this));
 	
-	if (testPrints[1])
-		GetTextHelper()->PrintString(testText, "One One One One One One One One One One One One One One One One\n");
-	if (testPrints[2])
-		GetTextHelper()->PrintString(testText, "Two\n");
-	if (testPrints[3])
-		GetTextHelper()->PrintString(testText, "Three\n");
-	if (testPrints[4])
-		GetTextHelper()->PrintString(testText, "Four\n");
-
 	UpdateScene(system, frameTime.LastFrameTime());
 }
 

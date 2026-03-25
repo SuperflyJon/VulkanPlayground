@@ -128,8 +128,6 @@ private:
 	uint32_t currentGroup;
 	uint32_t currentSubgroup;
 	bool newScene = false;
-
-	bool fontsEnabled;
 };
 
 extern VulkanApplication& CreatePipelinesScene1App();

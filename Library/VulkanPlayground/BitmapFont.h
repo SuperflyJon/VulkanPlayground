@@ -14,7 +14,7 @@ class FreeTypeFont;
 
 enum class HorizontalAlignment { Left, Right };
 
-class FontData
+class FontData : public ITidy
 {
 public:
 	FontData(const std::string& _faceName, int _fontSize);
@@ -28,10 +28,23 @@ public:
 
 	virtual bool IsValid() const = 0;
 	bool UnexpectedChars() const { return !requiredChars.empty(); }
-	void Reset() { requiredChars.clear(); }
+	virtual void Reset()
+	{
+		requiredChars.clear(); 
+		bufferSize = 0;
+	}
 
 	void LoadFont();
 	bool Loaded() { return (pixelData.pixels != nullptr); }
+
+	void AddMoreCharacters(uint32_t count) { bufferSize += count; }
+
+	int Descent() const { return descent; }
+	int Ascent() const { return ascent; }
+
+	//TODO: Shouldn't be in this class (Vulkan specific...)
+	virtual void Draw(VulkanSystem& system, VkCommandBuffer commandBuffer) = 0;
+	virtual PosData& GetNextPosData(VulkanSystem& system) = 0;
 
 private:
 	uint32_t CalculateTextureWidth();
@@ -42,6 +55,7 @@ public:
 	bool AddCharacters(const std::u32string& text);
 
 protected:
+	uint32_t bufferSize = 0;
 	std::string faceName;
 	int fontSize;
 	std::set<char32_t> requiredChars;
@@ -49,6 +63,8 @@ protected:
 	bool anyColourGlyphs;
 	PixelData pixelData;
 	Kerning kerning;
+	int descent;
+	int ascent;
 };
 
 class Vulkan2DFont : public FontData
@@ -58,10 +74,30 @@ public:
 	{
 	}
 
+	PosData& GetNextPosData(VulkanSystem& system);
+	uint32_t CurBufCharCount() const;
+
+	Buffer vertexBuffer;
+	void* vertexMemory = nullptr;
+	PosData* pData = nullptr;
+
+	virtual void Reset()
+	{
+		FontData::Reset();
+
+		// Reset data pointer
+		pData = (PosData*)vertexMemory;
+	}
+
 	void Setup(VulkanSystem& system, VulkanApplication& theApp, VkExtent2D workingExtent, const RenderPass& renderPass, int windowWidth, int windowHeight);
-	void Draw(VkCommandBuffer commandBuffer, Buffer& vertexBuffer, uint32_t numChars) const;
+	void Draw(VulkanSystem& system, VkCommandBuffer commandBuffer);
 
 	bool IsValid() const override { return pipeline.Created(); }
+
+	void Tidy(VulkanSystem& system) override
+	{
+		vertexBuffer.DestroyBuffer(system);
+	}
 
 private:
 	Descriptor descriptor;
@@ -76,34 +112,8 @@ private:
 	UBO<UboProj> uboProj;
 };
 
-class TypeSetter : public ITidy
+class TypeSetter
 {
-public:
-	void PrintStringInternal(FontData& fontData, const std::u32string& string, const glm::vec3& fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
-
-	static const size_t TYPESET_PADDING = 5;
-
-	TypeSetter(size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE);
-	~TypeSetter();
-	void SetHorizontalAlignment(HorizontalAlignment val) { horizontalAlignment = val; }
-	void Init(size_t x, size_t y, size_t width, size_t height);
-	void Reset();
-	void Tidy(VulkanSystem& system) override;
-
-	bool PrintExpected(const std::u32string& string, const glm::vec3& fontColour, float scale);
-	bool LayoutStrings(VulkanSystem& system);
-
-	void Draw(VulkanSystem& system, VkCommandBuffer commandBuffer);
-	void UpdateBlankSpace(size_t pixels);
-		
-	float MaxRowWidth() const { return maxRowWidth; }
-	size_t NumRows() const;
-
-	bool Visible() const { return maxWidth > 0 && maxHeight > 0; }
-	float GetRowPos(size_t row) const;
-	uint32_t CurBufCharCount() const;
-	bool FirstPrint() const { return stringCheckNum == 0; }
-
 	struct PrintInfo
 	{
 		std::u32string text;
@@ -112,14 +122,38 @@ public:
 		FontData* font;
 		std::vector<float> xVals;
 	};
+
+public:
+	void PrintStringInternal(FontData& fontData, const std::u32string& string, const glm::vec3& fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
+
+	static const size_t TYPESET_PADDING = 4;
+
+	TypeSetter(size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE);
+	~TypeSetter();
+	void SetHorizontalAlignment(HorizontalAlignment val) { horizontalAlignment = val; }
+	void Init(size_t x, size_t y, size_t width, size_t height);
+	void Reset(bool clearPrints);
+
+	bool PrintExpected(const PrintInfo& printInfo);
+	bool OutOfDate() const { return stringCheckNum != prints.size(); }
+
+	bool LayoutStrings(FontData* primaryFont);
+	void Print(VulkanSystem& system, FontData* primaryFont);
+
+	float MaxRowWidth() const { return maxRowWidth; }
+	size_t NumRows() const;
+
+	bool Visible() const { return maxWidth > 0 && maxHeight > 0; }
+	float GetRowPos(size_t row) const;
+	bool FirstPrint() const { return stringCheckNum == 0; }
+
 	const std::vector<PrintInfo>& GetPrints() { return prints; }
-	void* GetData() { return vertexMemory; }
 
 	void Invalidate() { stringCheckNum = INVALID_SIZE; }
 
 protected:
 	bool LayoutHorizontal(PrintInfo& print);
-	bool LayoutVertical(VulkanSystem& system);
+	void LayoutVertical();
 	void TruncatePreviousPrint();
 
 	enum class AddPrintReturn { OKAY, RETRY_AT_START, PRINT_TOO_BIG };
@@ -127,7 +161,6 @@ protected:
 	void TrimPrints(size_t newSize);
 
 private:
-public:
 	size_t stringCheckNum;
 	size_t xPos, yPos;
 	HorizontalAlignment horizontalAlignment;
@@ -138,7 +171,4 @@ public:
 
 	std::vector<PrintInfo> prints;
 	std::unique_ptr<Heights> heights;
-
-	Buffer vertexBuffer;
-	void* vertexMemory;
 };

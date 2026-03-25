@@ -27,6 +27,9 @@ public:
 
 	int CalcKern(int firstChar, int secondChar);
 
+	int GetLineAscent();
+	int GetLineDescent();
+
 protected:
 	void FindFontNames(const std::string& faceName);
 	void InitFreetype(int fontSize);

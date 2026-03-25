@@ -131,6 +131,11 @@ std::string WinUtils::FormatDataSize(size_t bytes)
 	return ss.str();
 }
 
+bool CaselessCompare(const std::wstring& lhs, const std::wstring& rhs)
+{
+	return (_wcsicmp(lhs.c_str(), rhs.c_str()) == 0);
+}
+
 bool CaselessCompare(const std::string& lhs, const std::string& rhs)
 {
 	return (_stricmp(lhs.c_str(), rhs.c_str()) == 0);
@@ -191,7 +196,7 @@ std::string WinUtils::GetFontFilename(const std::string& fontFace)
 	auto key = win32::RegOpenKey(HKEY_LOCAL_MACHINE, FONT_REG_KEY, KEY_READ);
 	for (auto& val : win32::RegEnumValues(key.Get()))
 	{
-		if (val.first == fontFaceU16 || val.first == fontFaceTTU16)
+		if (CaselessCompare(val.first, fontFaceU16) || CaselessCompare(val.first, fontFaceTTU16))
 		{
 			if (val.second != REG_SZ)
 				throw std::runtime_error("Error finding font name in registry");

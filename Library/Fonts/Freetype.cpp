@@ -129,6 +129,9 @@ public:
 			return 0;
 	}
 
+	int GetLineAscent() { return face->size->metrics.ascender; }
+	int GetLineDescent() { return face->size->metrics.descender; }
+
 private:
 	FT_Face face;
 };
@@ -150,7 +153,7 @@ public:
 		ftDll.FT_Done_FreeType(ftLib);
 	}
 
-	FTI_Font& GetFont(const std::string& fontName)
+	FTI_Font& CreateFont(const std::string& fontName)
 	{
 		auto it = fonts.find(fontName);
 		if (it == fonts.end())
@@ -166,6 +169,21 @@ public:
 		return fonts[fontName]->GetKerning(firstGlyphIndex, secondGlyphIndex);
 	}
 
+	int GetLineAscent()
+	{
+		if (fonts.empty())
+			return 0;
+		else
+			return fonts.begin()->second->GetLineAscent() / 64;
+	}
+	int GetLineDescent()
+	{
+		if (fonts.empty())
+			return 0;
+		else
+			return fonts.begin()->second->GetLineDescent() / 64;
+	}
+
 private:
 	FT_Library ftLib;
 
@@ -177,6 +195,16 @@ FreeTypeFont::FreeTypeFont(const std::string& faceName, int fontSize)
 {
 	FindFontNames(faceName);
 	InitFreetype(fontSize);
+}
+
+int FreeTypeFont::GetLineAscent()
+{
+	return m_internal->GetLineAscent();
+}
+
+int FreeTypeFont::GetLineDescent()
+{
+	return m_internal->GetLineDescent();
 }
 
 FreeTypeFont::~FreeTypeFont() = default;
@@ -212,7 +240,7 @@ GlyphPtr FreeTypeFont::FindGlyphInFonts(char32_t character)
 {
 	for (auto& face : fontNames)
 	{
-		auto glyph = m_internal->GetFont(face).FindGlyph(character);
+		auto glyph = m_internal->CreateFont(face).FindGlyph(character);
 		if (glyph != nullptr)
 			return glyph;
 	}

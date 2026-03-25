@@ -12,10 +12,7 @@
 // Helper implementation
 void AppGroups::AddApp(AppList& list, VulkanApplication& app, int resourceId)
 {
-	if (fontsEnabled)
-		app.SetTextHelper(new BasicStrings(resourceId));
-	else
-		app.SetTextHelper(new ITextHelper());	// Disable text functions
+	app.SetTextHelper(new BasicStrings(resourceId));
 
 	list.Add(app);
 }
@@ -34,7 +31,6 @@ void AppGroups::AddAppGroup(std::vector<AppDetails> appDetails)
 }
 
 AppGroups::AppGroups()
-	: fontsEnabled(true)
 {
 	AddAppGroup( {
 		{new TriangleSimpleApp, IDR_Triangle_Simple},
@@ -162,16 +158,14 @@ AppGroups::AppGroups()
 		for (int appNum = 0; appNum < numSubGroups; appNum++)
 		{
 			auto& app = groups[groupNum].GetApp(appNum);
-			if (fontsEnabled)
-			{
-				std::stringstream appNumStr;
-				appNumStr << '(' << groupNum + 1 << '/' << groups.size() << ") ";
-				std::stringstream appSubNumStr;
-				appSubNumStr << " (" << appNum + 1 << '/' << numSubGroups << ")";
 
-				auto strings = (BasicStrings*)app.GetTextHelper();
-				strings->SetGroupStrings(appNumStr.str(), appSubNumStr.str());
-			}
+			std::stringstream appNumStr;
+			appNumStr << '(' << groupNum + 1 << '/' << groups.size() << ") ";
+			std::stringstream appSubNumStr;
+			appSubNumStr << " (" << appNum + 1 << '/' << numSubGroups << ")";
+
+			auto strings = (BasicStrings*)app.GetTextHelper();
+			strings->SetGroupStrings(appNumStr.str(), appSubNumStr.str());
 
 			app.SetClearColour({ rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 0 });
 		}

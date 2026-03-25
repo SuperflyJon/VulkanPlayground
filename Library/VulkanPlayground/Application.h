@@ -35,8 +35,6 @@ class ITextHelper;
 class VulkanApplication : public ITidy
 {
 public:
-	bool testPrints[5] = {};
-
 	VulkanApplication();
 	virtual ~VulkanApplication();
 
