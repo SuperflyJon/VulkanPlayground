@@ -1,10 +1,12 @@
 
-#include "stdafx.h"
 #include "Freetype.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "WinUtil.h"
-#include "BitmapFontInternal.h"
+#include <sstream>
+#include <iomanip>
+#include <map>
+#include <array>
+#include "../VulkanPlayground/WinUtil.h"
 
 constexpr char32_t TofuChar = 0x000025A1;	// Tofu unfound character
 constexpr char32_t UnicodeReplacementChar = 0xFFFD;	// Replacement character for invalid unicode sequences
@@ -12,10 +14,8 @@ constexpr char32_t UnicodeReplacementChar = 0xFFFD;	// Replacement character for
 std::string GetUnicodeOutput(char32_t character)
 {
 	std::ostringstream oss;
-
+	oss << character;
 	oss << "U+" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << character;
-
-
 	return oss.str();
 }
 
@@ -63,15 +63,19 @@ protected:
 	}
 };
 
-// Single instance to avoid re-loading freetype
-FreetypeDelayed ftDll;
+FreetypeDelayed& GetFtLib()
+{
+	// Single instance to avoid re-loading freetype
+	static FreetypeDelayed ftDll;
+	return ftDll;
+}
 
 class FTI_Font
 {
 public:
 	FTI_Font(FT_Library ftLib, const std::string& fontName, int fontSize)
 	{
-		if (ftDll.FT_New_Face(ftLib, fontName.c_str(), 0, &face))
+		if (GetFtLib().FT_New_Face(ftLib, fontName.c_str(), 0, &face))
 			throw std::runtime_error("ERROR::FREETYPE: Failed to load font");
 
 		// Fixed sized fonts are no longer used but just in case
@@ -88,14 +92,14 @@ public:
 					diff = ndiff;
 				}
 			}
-			ftDll.FT_Select_Size(face, best_match);
+			GetFtLib().FT_Select_Size(face, best_match);
 		}
 		else
-			ftDll.FT_Set_Pixel_Sizes(face, 0, fontSize);
+			GetFtLib().FT_Set_Pixel_Sizes(face, 0, fontSize);
 	}
 	~FTI_Font()
 	{
-		ftDll.FT_Done_Face(face);
+		GetFtLib().FT_Done_Face(face);
 	}
 	
 	FT_GlyphSlot FindGlyph(char32_t character)
@@ -104,7 +108,7 @@ public:
 			character = ' ';	// Use space and times advance by 4
 
 		// Load character glyph
-		int index = ftDll.FT_Get_Char_Index(face, character);
+		int index = GetFtLib().FT_Get_Char_Index(face, character);
 		if (index == 0)
 			return nullptr;
 
@@ -114,7 +118,7 @@ public:
 		if (FT_HAS_COLOR(face))
 			loadFlags |= FT_LOAD_COLOR;
 
-		if (ftDll.FT_Load_Glyph(face, index, loadFlags))
+		if (GetFtLib().FT_Load_Glyph(face, index, loadFlags))
 			throw std::runtime_error("ERROR::FREETYTPE: Failed to load Glyph");
 
 		return face->glyph;
@@ -123,7 +127,7 @@ public:
 	int GetKerning(int firstGlyphIndex, int secondGlyphIndex)
 	{
 		FT_Vector kernAdvance;
-		if (ftDll.FT_Get_Kerning(face, firstGlyphIndex, secondGlyphIndex, ft_kerning_unfitted, &kernAdvance) == 0)
+		if (GetFtLib().FT_Get_Kerning(face, firstGlyphIndex, secondGlyphIndex, ft_kerning_unfitted, &kernAdvance) == 0)
 			return kernAdvance.x;
 		else
 			return 0;
@@ -142,15 +146,15 @@ public:
 	FreeTypeInternal(int fontSize)
 		: fontSize(fontSize)
 	{
-		ftDll.Setup();
+		GetFtLib().Setup();
 
-		if (ftDll.FT_Init_FreeType(&ftLib))
+		if (GetFtLib().FT_Init_FreeType(&ftLib))
 			throw std::runtime_error("ERROR::FREETYPE: Could not initialise FreeType Library");
 	}
 	~FreeTypeInternal()
 	{
 		fonts.clear();
-		ftDll.FT_Done_FreeType(ftLib);
+		GetFtLib().FT_Done_FreeType(ftLib);
 	}
 
 	FTI_Font& CreateFont(const std::string& fontName)
@@ -268,7 +272,7 @@ void FreeTypeFont::InitFreetype(int fontSize)
 	m_internal = std::make_unique<FreeTypeInternal>(fontSize);
 }
 
-FreeTypeFont::GlyphData FreeTypeFont::LoadGlyphData(char32_t character, bool& anyColourGlyphs)
+std::unique_ptr<CharData> FreeTypeFont::LoadGlyphData(char32_t character, bool& anyColourGlyphs)
 {
 	auto glyph = (FT_GlyphSlot)FindGlyph(character);
 	bool coloured = (glyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA);
@@ -279,69 +283,10 @@ FreeTypeFont::GlyphData FreeTypeFont::LoadGlyphData(char32_t character, bool& an
 	if (character == U'\t')
 		advance *= 4;	// 4 spaces
 
-	return { glyph->glyph_index, advance, glyph->bitmap.width, glyph->bitmap.rows, glyph->bitmap_left, glyph->bitmap_top, coloured, glyph->bitmap.buffer };
+	return std::make_unique<CharData>(glyph->glyph_index, advance, glyph->bitmap.width, glyph->bitmap.rows, glyph->bitmap_left, glyph->bitmap_top, coloured, glyph->bitmap.buffer);
 }
 
 int FreeTypeFont::CalcKern(int firstChar, int secondChar)
 {
 	return m_internal->GetKerning(fontNames.front(), firstChar, secondChar);	// Use main font for kerning calculations
-}
-
-FreeTypeFont::GlyphData::GlyphData(unsigned int indexVal, long advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data)
-{
-	index = indexVal;
-	advance = advanceVal;
-	width = widthVal;
-	rows = rowsVal;
-	bitmap_left = bitmap_leftVal;
-	bitmap_top = bitmap_topVal;
-	coloured = colouredVal;
-
-	size_t dataSize = (size_t)width * rows;
-	if (coloured)
-		dataSize *= 4;	// rgba data
-	bitdata = std::make_unique<byte[]>(dataSize);
-	memcpy(bitdata.get(), data, dataSize);
-}
-
-void Kerning::CalcKerning(FreeTypeFont& ft_font, const std::map<char32_t, CharData>& charData)
-{
-	for (auto itOuter = kerning.begin(); itOuter != kerning.end(); )
-	{
-		const auto& firstIndex = charData.at(itOuter->first).GetIndex();
-
-		auto& innerMap = itOuter->second;
-		for (auto itInner = innerMap.begin(); itInner != innerMap.end(); )
-		{
-			int kern = ft_font.CalcKern(firstIndex, charData.at(itInner->first).GetIndex());
-			if (kern == 0)
-			{
-				itInner = innerMap.erase(itInner); // returns next iterator
-			}
-			else
-			{
-				itInner->second = kern;
-				++itInner;
-			}
-		}
-
-		if (innerMap.empty())
-			itOuter = kerning.erase(itOuter);	// Remove empty inner maps
-		else
-			++itOuter;
-	}
-}
-
-int Kerning::GetKerning(char32_t first, char32_t second) const
-{
-	auto firstPos = kerning.find(first);
-	if (firstPos == kerning.end())
-		return 0;
-
-	auto& secondMap = firstPos->second;
-	auto secondPos = secondMap.find(second);
-	if (secondPos == secondMap.end())
-		return 0;
-
-	return secondPos->second;
 }

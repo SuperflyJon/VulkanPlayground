@@ -9,7 +9,6 @@ class Descriptor;
 class Descriptor;
 struct QueueIndicies;
 class Shader;
-class Vulkan2DFont;
 
 #pragma warning(disable:4324)
 

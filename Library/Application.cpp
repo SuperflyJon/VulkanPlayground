@@ -239,7 +239,8 @@ void VulkanApplication3D::AppUpdateScene(VulkanSystem& system, const FPSTimer& f
 	mvpUBO().model = savedModel;
 
 #ifdef SHOW_CAMERA_DETAILS
-	static TypeSetter camTS(5, 90, 1000, 1000);
+	static TypeSetter camTS(TypeSetter::TYPESET_PADDING, 41, 1000, 1000);
+	camTS.SetVerticalAlignment(VerticalAlignment::Down);
 	GetTextHelper()->PrintString(camTS, "Cam: " + GetCameraPos().GetDebugString());
 	GetTextHelper()->PrintString(camTS, "\nWld: " + GetWorldPos().GetDebugString());
 #endif
@@ -411,9 +412,8 @@ void VulkanApplication::ResetPrints()
 
 void VulkanApplication::ProcessPrints(VulkanSystem& system, VkExtent2D workingExtent)
 {
-	std::set<Vulkan2DFont*> changedFonts;
 	bool redraw = false, recreate = false;
-	GetTextHelper()->Process(system, changedFonts, &redraw, &recreate);
+	GetTextHelper()->Process(system, &redraw, &recreate);
 	if (recreate)
 	{
 		RecreateObjects();
@@ -422,8 +422,8 @@ void VulkanApplication::ProcessPrints(VulkanSystem& system, VkExtent2D workingEx
 	if (redraw)
 		RedrawScene();
 
-	for (auto font : changedFonts)
-		font->Setup(system, *this, workingExtent, *fontRenderPass, windowWidth, windowHeight);
+	for (auto font : GetTextHelper()->GetFontsInuse())
+		static_cast<Vulkan2DFont*>(font)->Setup(system, *this, workingExtent, *fontRenderPass, windowWidth, windowHeight);
 }
 
 bool VulkanApplication::ObjectsCreated(VulkanSystem &system, RenderPasses& renderPasses)
@@ -449,7 +449,8 @@ void VulkanApplication::AppUpdateScene(VulkanSystem& system, const FPSTimer& fra
 			fpsString += " (vSync)";
 		if (GetTextHelper()->ShowingText())
 		{
-			static TypeSetter fpsTS(10, 30, 1000, 1000);
+			static TypeSetter fpsTS(TypeSetter::TYPESET_PADDING, TypeSetter::TYPESET_PADDING, 1000, 1000);
+			fpsTS.SetVerticalAlignment(VerticalAlignment::Down);
 			GetTextHelper()->PrintString(fpsTS, fpsString);
 		}
 		else

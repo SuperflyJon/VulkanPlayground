@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Fonts/Freetype.h"
+#include "CharData.h"
 
 struct IsWhiteSpaceFn
 {
@@ -15,14 +15,6 @@ template<class string_type> uint32_t CountNonWhiteSpace(const string_type& str)
 {
 	return CountNonWhiteSpace(str.begin(), str.end());
 }
-
-struct PosData
-{
-	glm::vec2 pos, size;
-	glm::uvec2 textorg, textoff;
-	glm::vec3 colour;
-	int coloured{ -1 };
-};
 
 class Heights
 {
@@ -43,37 +35,6 @@ private:
 	std::vector<bool> hasSpecialChars;
 	std::vector<size_t> numCharsInLine;
 };
-
-class CharData
-{
-public:
-	CharData(FreeTypeFont::GlyphData&& glyphData)
-		: glyphData(std::move(glyphData)), offsetX(0), offsetY(0)
-	{
-	}
-
-	template<class TYPE> void CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t curRowWidth);
-
-	void Unload() { glyphData.index = 0; }
-	bool Loaded() const { return glyphData.index != 0; }
-
-	void SetIndex(int val) { glyphData.index = val; }
-	int GetIndex() const { return glyphData.index; }
-
-	int LeftBearing() const { return glyphData.bitmap_left; }
-	int Bitmap_top() const { return glyphData.bitmap_top; }
-	size_t Advance() const { return glyphData.advance; }
-	size_t Width() const { return glyphData.width; }
-	size_t Rows() const { return glyphData.rows; }
-	size_t OffsetX() const { return offsetX; }
-	size_t OffsetY() const { return offsetY; }
-	bool Coloured() const { return glyphData.coloured; }
-
-private:
-	FreeTypeFont::GlyphData glyphData;
-	size_t offsetX, offsetY;
-};
-
 
 class Packer
 {
@@ -127,16 +88,4 @@ public:
 	std::vector<size_t> packHeights;
 
 	size_t padding;
-};
-
-class Kerning
-{
-public:
-	void SetKerning(char32_t first, char32_t second, int kern) { kerning[first][second] = kern; }
-	int GetKerning(char32_t first, char32_t second) const;
-	void Clear() { kerning.clear(); }
-	void CalcKerning(FreeTypeFont& ft_font, const std::map<char32_t, CharData>& charData);
-
-private:
-	std::map<char32_t, std::map<char32_t, int>> kerning;
 };

@@ -1,5 +1,9 @@
 #pragma once
 
+#include <vector>
+#include <string>
+#include <stdexcept>
+
 namespace WinUtils
 {
 	void EnableUnicodeConsoleOutput();

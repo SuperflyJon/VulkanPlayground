@@ -1,10 +1,11 @@
 
-#include "stdafx.h"
-#include "WinUtil.h"
+#include "VulkanPlayground/WinUtil.h"
 #include <Windows.h>
 #include <io.h>
 #include <algorithm>
 #include <string> 
+#include <iostream>
+#include <sstream>
 
 void OutputWithConsoleAttributes(const std::string& text, WORD attributes, bool newLineAtEnd = true, std::ostream& stream = std::cout)
 {
@@ -81,7 +82,7 @@ bool WinUtils::FileExists(const std::string& filename)
 
 std::string WinUtils::FindFile(const std::string& filename)
 {
-	std::vector<std::string> dirs{ "bin", VULKAN_PLAYGROUND_DIR"\\bin", "..\\bin", "..\\..\\bin", "..\\..\\..\\bin", ". ", "..", "..\\..", "..\\..\\..", "..\\..\\..\\.." };
+	std::vector<std::string> dirs{ "bin", "..\\bin", "..\\..\\bin", "..\\..\\..\\bin", ". ", "..", "..\\..", "..\\..\\..", "..\\..\\..\\.." };
 	for (auto dir : dirs)
 	{
 		std::string testfile{ dir + '\\' + filename };
@@ -184,7 +185,6 @@ std::string WinUtils::GetJustFileName(const std::string& filename)
 }
 
 #include "Registry.hpp"
-#include "Common.h"
 
 std::wstring FONT_REG_KEY = LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts)";
 std::wstring LINKFONT_REG_KEY = LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink)";
@@ -262,7 +262,7 @@ void WinUtils::DelayedLib::Setup()
 
 		Init();
 
-		if (VulkanPlayground::showObjectCreationMessages)
+//		if (VulkanPlayground::showObjectCreationMessages)
 			std::cout << "Loaded: " + moduleName + "\n";
 	}
 }

@@ -4,15 +4,25 @@
 #include "Pipeline.h"
 #include "PixelData.h"
 #include "Image.h"
-#include "BitmapFontInternal.h"
 
 class Packer;
 class TypeSetter;
 class CharData;
 class Heights;
-class FreeTypeFont;
+struct PrintInfo;
 
 enum class HorizontalAlignment { Left, Right };
+enum class VerticalAlignment { Up, Down };
+
+struct PosData
+{
+	glm::vec2 pos, size;
+	glm::uvec2 textorg, textoff;
+	glm::vec3 colour;
+	int coloured{ -1 };
+};
+
+class FreeTypeFont;
 
 class FontData : public ITidy
 {
@@ -20,21 +30,17 @@ public:
 	FontData(const std::string& _faceName, int _fontSize);
 	~FontData();
 
-	void ChangeFont(const std::string& faceName, int fontSize);
-
 	const CharData& GetChar(char32_t character) const;
 	int GetKerning(char32_t first, char32_t second) const;
-	void SetupKerning(const std::u32string& text);
+	void SetupKerning(FreeTypeFont& ft_font, const std::u32string& text);
 
 	virtual bool IsValid() const = 0;
-	bool UnexpectedChars() const { return !requiredChars.empty(); }
 	virtual void Reset()
 	{
-		requiredChars.clear(); 
 		bufferSize = 0;
 	}
 
-	void LoadFont();
+	void LoadFont(const std::vector<const PrintInfo*>& prints);
 	bool Loaded() { return (pixelData.pixels != nullptr); }
 
 	void AddMoreCharacters(uint32_t count) { bufferSize += count; }
@@ -45,6 +51,8 @@ public:
 	//TODO: Shouldn't be in this class (Vulkan specific...)
 	virtual void Draw(VulkanSystem& system, VkCommandBuffer commandBuffer) = 0;
 	virtual PosData& GetNextPosData(VulkanSystem& system) = 0;
+
+	bool Update(const std::vector<const PrintInfo*>& prints);
 
 private:
 	uint32_t CalculateTextureWidth();
@@ -58,11 +66,10 @@ protected:
 	uint32_t bufferSize = 0;
 	std::string faceName;
 	int fontSize;
-	std::set<char32_t> requiredChars;
-	std::map<char32_t, CharData> charList;
+	std::map<char32_t, std::unique_ptr<CharData>> charList;
 	bool anyColourGlyphs;
 	PixelData pixelData;
-	Kerning kerning;
+	std::map<char32_t, std::map<char32_t, int>> kerning;
 	int descent;
 	int ascent;
 };
@@ -112,17 +119,17 @@ private:
 	UBO<UboProj> uboProj;
 };
 
+struct PrintInfo
+{
+	std::u32string text;
+	glm::vec3 colour;
+	float scale;
+	FontData* font;
+	std::vector<float> xVals;
+};
+
 class TypeSetter
 {
-	struct PrintInfo
-	{
-		std::u32string text;
-		glm::vec3 colour;
-		float scale;
-		FontData* font;
-		std::vector<float> xVals;
-	};
-
 public:
 	void PrintStringInternal(FontData& fontData, const std::u32string& string, const glm::vec3& fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f);
 
@@ -130,6 +137,8 @@ public:
 
 	TypeSetter(size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE);
 	~TypeSetter();
+
+	void SetVerticalAlignment(VerticalAlignment val) { verticalAlignment = val; }
 	void SetHorizontalAlignment(HorizontalAlignment val) { horizontalAlignment = val; }
 	void Init(size_t x, size_t y, size_t width, size_t height);
 	void Reset(bool clearPrints);
@@ -149,11 +158,10 @@ public:
 
 	const std::vector<PrintInfo>& GetPrints() { return prints; }
 
-	void Invalidate() { stringCheckNum = INVALID_SIZE; }
+	void SetBackground(const glm::vec3& colour) { backgroundColour = colour; }
 
 protected:
 	bool LayoutHorizontal(PrintInfo& print);
-	void LayoutVertical();
 	void TruncatePreviousPrint();
 
 	enum class AddPrintReturn { OKAY, RETRY_AT_START, PRINT_TOO_BIG };
@@ -164,10 +172,12 @@ private:
 	size_t stringCheckNum;
 	size_t xPos, yPos;
 	HorizontalAlignment horizontalAlignment;
+	VerticalAlignment verticalAlignment;
 	float curXpos;
 	size_t maxWidth, maxHeight;
 	float maxRowWidth;
 	bool truncated;
+	glm::vec3 backgroundColour = glm::vec3(0.25);
 
 	std::vector<PrintInfo> prints;
 	std::unique_ptr<Heights> heights;

@@ -4,7 +4,6 @@
 #include "BitmapFont.h"
 #include "WinUtil.h"
 #include "RenderPass.h"
-#include "Fonts/Freetype.h"
 
 ITextHelper::ITextHelper()
  : showText(true), defaultFont(nullptr)
@@ -31,7 +30,7 @@ void ITextHelper::ResetPrints()
 		font->Reset();
 }
 
-TypeSetter& TextHelperBase::PrintStringFont(Vulkan2DFont& font, TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
+TypeSetter& TextHelperBase::PrintStringFont(FontData& font, TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour, float scale)
 {
 	if (ShowingText() && typeSetter.Visible())
 	{
@@ -159,7 +158,7 @@ void TextHelperBase::PrintText(bool App3D, bool lightApp)
 		PrintKeySection(lightKeys);
 }
 
-Vulkan2DFont& ITextHelper::GetFont()
+FontData& ITextHelper::GetFont()
 {
 	if (defaultFont == nullptr)
 		defaultFont = std::make_unique<Vulkan2DFont>();
@@ -180,63 +179,39 @@ void ITextHelper::CreateFontCommandBuffers(VulkanSystem& system, RenderPass* fon
 	}
 }
 
-void ITextHelper::Process(VulkanSystem& system, std::set<Vulkan2DFont*> &changedFonts, bool* redraw, bool *recreate)
+void ITextHelper::Process(VulkanSystem& system, bool* redraw, bool *recreate)
 {
 	*redraw = false;
 	*recreate = false;
 
-	for (auto font : fontsInuse)
-	{
-		if (font->IsValid() && font->UnexpectedChars())
-		{
-			*recreate = true;
-			for (auto typeSetter : registeredTypeSetters)
-			{
-				for (auto& print : typeSetter->GetPrints())
-				{
-					if (font == print.font)
-						typeSetter->Invalidate();
-				}
-			}
-		}
-
-		// Ensure font is loaded
-		if (!font->Loaded())
-		{
-			// Note all the possible kernings
-			for (auto typeSetter : registeredTypeSetters)
-			{
-				for (auto& print : typeSetter->GetPrints())
-				{
-					if (font == print.font)
-						font->SetupKerning(print.text);
-				}
-			}
-
-			font->LoadFont();
-		}
-
-		if (!font->IsValid())
-			changedFonts.insert(static_cast<Vulkan2DFont*>(font));
-	}
-
+	std::vector<const PrintInfo*> outofdatePrints;
 	for (auto checkTS : registeredTypeSetters)
 	{
 		if (checkTS->OutOfDate())
 		{
-			for (auto font : fontsInuse)
-				font->Reset();
-
-			auto primaryFont = *fontsInuse.begin();
-			for (auto typeSetter : registeredTypeSetters)
+			for (auto& print : checkTS->GetPrints())
 			{
-				if (typeSetter->LayoutStrings(primaryFont))
-					*redraw = true;
-			}
-			for (auto typeSetter : registeredTypeSetters)
-			{
-				typeSetter->Print(system, primaryFont);
+				outofdatePrints.push_back(&print);
 			}
 		}
+	}
+	if (outofdatePrints.empty())
+		return;
+
+	for (auto font : fontsInuse)
+	{
+		if (font->Update(outofdatePrints))
+			*recreate = true;
+	}
+
+	auto primaryFont = *fontsInuse.begin();
+	for (auto typeSetter : registeredTypeSetters)
+	{
+		if (typeSetter->LayoutStrings(primaryFont))
+			*redraw = true;
+	}
+	for (auto typeSetter : registeredTypeSetters)
+	{
+		typeSetter->Print(system, primaryFont);
 	}
 }

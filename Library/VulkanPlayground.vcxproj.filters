@@ -111,6 +111,9 @@
     <ClInclude Include="Fonts\Freetype.h">
       <Filter>Fonts</Filter>
     </ClInclude>
+    <ClInclude Include="CharData.h">
+      <Filter>Fonts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

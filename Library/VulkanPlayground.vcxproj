@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BitmapFontInternal.h" />
+    <ClInclude Include="CharData.h" />
     <ClInclude Include="Fonts\Freetype.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -124,7 +125,9 @@
     <ClCompile Include="DisplayBuffers.cpp" />
     <ClCompile Include="EventData.cpp" />
     <ClCompile Include="Extensions.cpp" />
-    <ClCompile Include="Fonts\Freetype.cpp" />
+    <ClCompile Include="Fonts\Freetype.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="GLFW.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -139,7 +142,9 @@
     <ClCompile Include="System.cpp" />
     <ClCompile Include="VulkanPlayground\TextHelper.cpp" />
     <ClCompile Include="WindowSystem.cpp" />
-    <ClCompile Include="WinUtil.cpp" />
+    <ClCompile Include="WinUtil.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Shader Include="shaders\Font.frag" />

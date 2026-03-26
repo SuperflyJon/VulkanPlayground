@@ -19,7 +19,7 @@ public:
 	virtual void PrintKeySection(const UnicodeString& /*keyString*/) {}
 	virtual void PrintText(bool /*App3D*/, bool /*lightApp*/) {}
 
-	virtual TypeSetter& PrintStringFont(Vulkan2DFont& font, TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f) = 0;
+	virtual TypeSetter& PrintStringFont(FontData& font, TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f) = 0;
 	TypeSetter& PrintString(TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f)
 	{
 		return PrintStringFont(GetFont(), typeSetter, unicodeString, fontColour, scale);
@@ -28,16 +28,18 @@ public:
 	bool ShowingText() const { return showText; }
 	void ToggleShowingText() { showText = !showText; }
 
-	void Process(VulkanSystem& system, std::set<Vulkan2DFont*>& changedFonts, bool* redraw, bool* recreate);
+	void Process(VulkanSystem& system, bool* redraw, bool* recreate);
 	void CreateFontCommandBuffers(VulkanSystem& system, RenderPass* fontRenderPass);
 
-	Vulkan2DFont& GetFont();
+	FontData& GetFont();
 
 	virtual bool Enabled() { return false; }
 
+	const std::set<FontData*> &GetFontsInuse() const { return fontsInuse; }
+
 protected:
 	bool showText;
-	std::unique_ptr<Vulkan2DFont> defaultFont;
+	std::unique_ptr<FontData> defaultFont;
 	std::set<TypeSetter*> registeredTypeSetters;
 	std::set<FontData*> fontsInuse;
 };
@@ -49,7 +51,7 @@ public:
 	void SetupText(VkExtent2D workingExtent) override;
 	void PrintKeySection(const UnicodeString& keyString) override;
 	void PrintText(bool App3D, bool lightApp) override;
-	TypeSetter& PrintStringFont(Vulkan2DFont& font, TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f) override;
+	TypeSetter& PrintStringFont(FontData& font, TypeSetter& typeSetter, const UnicodeString& unicodeString, glm::vec3 fontColour = glm::vec3(1.0f, 1.0f, 1.0f), float scale = 1.0f) override;
 	
 
 	bool Enabled() override { return true; }

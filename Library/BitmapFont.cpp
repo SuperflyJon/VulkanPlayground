@@ -7,6 +7,7 @@
 #include "WinUtil.h"
 #include <numeric>
 #include "BitmapFontInternal.h"
+#include "Fonts/Freetype.h"
 
 FontData::FontData(const std::string& _faceName, int _fontSize) : faceName(_faceName), fontSize(_fontSize), anyColourGlyphs(false)
 {
@@ -44,17 +45,17 @@ PosData& Vulkan2DFont::GetNextPosData(VulkanSystem& system)
 	return *pData++;
 }
 
-void FontData::LoadFont()
+void FontData::LoadFont(const std::vector<const PrintInfo*>& prints)
 {
 	AddCharacters(U".…");	// Ensure there is a dot as used for background and … if out of space
 
 	FreeTypeFont ft_font(faceName, fontSize);
 
-	std::cout << requiredChars.size() << " new chars: ";
-	for (auto& character : requiredChars)
+	for (auto &character : charList)
 	{
-		charList.emplace(character, ft_font.LoadGlyphData(character, anyColourGlyphs));
-		std::cout << WinUtils::UTF32toUTF8({ character });
+		if (!character.second)
+			character.second = ft_font.LoadGlyphData(character.first, anyColourGlyphs);
+		std::cout << WinUtils::UTF32toUTF8({ character.first });
 	}
 	std::cout << "\n";
 
@@ -63,10 +64,14 @@ void FontData::LoadFont()
 
 	CreateFontTexture();
 
-	kerning.CalcKerning(ft_font, charList);
+	for (auto& print : prints)
+	{
+		if (print->font == this)
+			SetupKerning(ft_font, print->text);
+	}
 }
 
-void FontData::SetupKerning(const std::u32string& text)
+void FontData::SetupKerning(FreeTypeFont& ft_font, const std::u32string& text)
 {	// Build up all possible transitions
 	char32_t lastChar = '\0';
 	for (auto character : text)
@@ -76,7 +81,11 @@ void FontData::SetupKerning(const std::u32string& text)
 		else
 		{
 			if (lastChar != '\0')
-				kerning.SetKerning(lastChar, character, 0);
+			{
+				int kern = ft_font.CalcKern(charList.at(lastChar)->GetIndex(), charList.at(character)->GetIndex());
+				if (kern != 0)
+					kerning[lastChar][character] = kern;
+			}
 
 			lastChar = character;
 		}
@@ -89,12 +98,18 @@ const CharData& FontData::GetChar(char32_t character) const
 	if (it == charList.end())
 		throw std::runtime_error("Unexpected character not in font!");
 
-	return it->second;
+	return *it->second;
 }
 
 int FontData::GetKerning(char32_t first, char32_t second) const
 {
-	return kerning.GetKerning(first, second);
+	if (auto firstPos = kerning.find(first); firstPos != kerning.end())
+	{
+		auto& secondMap = firstPos->second;
+		if (auto secondPos = secondMap.find(second); secondPos != secondMap.end())
+			return secondPos->second;
+	}
+	return 0;
 }
 
 bool Packer::CalcPackSize(size_t width, size_t height)
@@ -149,21 +164,19 @@ void CharData::CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, 
 	offsetY = Y;
 
 	// Copy glyph
-	auto srcBuf = glyphData.bitdata.get();
+	auto srcBuf = bitdata.get();
 	for (size_t i = 0; i < height; i++)
 	{
-		if (i < glyphData.rows)
+		if (i < rows)
 		{
-			for (size_t j = 0; j < glyphData.width; j++)
-				destBuf[X + j].Copy(srcBuf, glyphData.coloured);
+			for (size_t j = 0; j < width; j++)
+				destBuf[X + j].Copy(srcBuf, coloured);
 
-			memset(destBuf + (size_t)X + glyphData.width, 0, sizeof(TYPE));
+			memset(destBuf + (size_t)X + width, 0, sizeof(TYPE));
 		}
 
 		destBuf += rowWidth;
 	}
-// Can't free this incase we need to recreate a larger bitmap with more characters...
-//glyphData.bitdata.reset();	// Free bitmap data
 }
 
 template<class TYPE>
@@ -191,8 +204,8 @@ uint32_t FontData::CalculateTextureWidth()
 	{
 		if (!IsWhiteSpace(character.first))
 		{
-			totalGlyphWidth += character.second.Width() + FONT_BITMAP_SPACING;
-			totalGlyphHeight += character.second.Rows() + FONT_BITMAP_SPACING;
+			totalGlyphWidth += character.second->Width() + FONT_BITMAP_SPACING;
+			totalGlyphHeight += character.second->Rows() + FONT_BITMAP_SPACING;
 		}
 	}
 
@@ -208,7 +221,7 @@ uint32_t FontData::CalculateTextureHeight(Packer& packer)
 	{
 		if (!IsWhiteSpace(character.first))
 		{
-			const CharData& charData = character.second;
+			const CharData& charData = *character.second;
 			packer.CalcPackSize(charData.Width() + FONT_BITMAP_SPACING, charData.Rows() + FONT_BITMAP_SPACING);
 		}
 	}
@@ -232,7 +245,7 @@ void FontData::CreateFontTexture()
 		for (auto& character : charList)
 		{
 			if (!IsWhiteSpace(character.first))
-				packer.Pack(character.second, (RGBA*)pixelData.pixels);
+				packer.Pack(*character.second, (RGBA*)pixelData.pixels);
 		}
 	}
 	else
@@ -241,7 +254,7 @@ void FontData::CreateFontTexture()
 		for (auto& character : charList)
 		{
 			if (!IsWhiteSpace(character.first))
-				packer.Pack(character.second, (Grey*)pixelData.pixels);
+				packer.Pack(*character.second, (Grey*)pixelData.pixels);
 		}
 	}
 }
@@ -278,18 +291,6 @@ void Vulkan2DFont::Setup(VulkanSystem& system, VulkanApplication& theApp, VkExte
 	}
 }
 
-void FontData::ChangeFont(const std::string& _faceName, int _fontSize)
-{
-	faceName = _faceName;
-	fontSize = _fontSize;
-
-	// Reload characters
-	InvalidateFont();
-	kerning.Clear();
-	for (auto& ele : charList)
-		ele.second.Unload();
-}
-
 void Vulkan2DFont::Draw(VulkanSystem& system, VkCommandBuffer commandBuffer)
 {
 	if (bufferSize == 0)
@@ -307,33 +308,34 @@ void TypeSetter::PrintStringInternal(FontData& fontData, const std::u32string& s
 	PrintInfo printInfo{ string, fontColour, scale, &fontData, {} };
 	if (!PrintExpected(printInfo))
 	{
-		if (fontData.AddCharacters(printInfo.text))
-			fontData.InvalidateFont();
-
 		prints.push_back(printInfo);
 	}
 }
 
 bool FontData::AddCharacters(const std::u32string& text)
 {
+	bool anyNewChars = false;
+
 	for (auto character : text)
 	{
 		if (character != '\n')
 		{
-			if (requiredChars.find(character) == requiredChars.end() && charList.find(character) == charList.end())
+			if (charList.find(character) == charList.end())
 			{	// Add character to be loaded
-				requiredChars.insert(character);
+				charList[character] = nullptr;
+				anyNewChars = true;
 			}
 		}
 	}
 
-	return !requiredChars.empty();
+	return anyNewChars;
 }
 
 TypeSetter::TypeSetter(size_t x, size_t y, size_t width, size_t height)
 	: heights(new Heights())
 {
 	horizontalAlignment = HorizontalAlignment::Left;
+	verticalAlignment = VerticalAlignment::Up;
 	Init(x, y, width, height);
 }
 TypeSetter::~TypeSetter() = default;
@@ -344,7 +346,10 @@ size_t TypeSetter::NumRows() const
 }
 float TypeSetter::GetRowPos(size_t row) const
 {
-	return (int)yPos - (int)heights->GetTotalHeight() + heights->GetRowOffset(row);
+	if (verticalAlignment == VerticalAlignment::Up)
+		return (int)yPos - (int)heights->GetTotalHeight() + heights->GetRowOffset(row);
+	else
+		return (int)yPos + heights->GetRowOffset(row);
 }
 
 void TypeSetter::Init(size_t x, size_t y, size_t width, size_t height)
@@ -372,14 +377,14 @@ float ConvertPixelCount(size_t val, float scale)
 	return ((float)val / 64.0f) * scale;
 }
 
-void SetupBackdrop(PosData& data, const CharData& charData, size_t x, size_t y, size_t backdropWidth, size_t backdropHeight)
+void SetupBackdrop(PosData& data, const CharData& charData, size_t x, size_t y, size_t backdropWidth, size_t backdropHeight, const glm::vec3 &backgroundColour, VerticalAlignment verticalAlignment)
 {
-	data.pos = glm::vec2((float)x, (float)y - backdropHeight);
+	data.pos = glm::vec2((float)x, (verticalAlignment == VerticalAlignment::Up) ? (float)y - backdropHeight : (float)y);
 	data.size = glm::vec2(backdropWidth, backdropHeight);
 	// Make a rougth background effect
 	data.textorg = glm::uvec2((short)charData.OffsetX() + (charData.Width() + 1) / 2, (short)charData.OffsetY());
 	data.textoff = glm::uvec2(1, 1);
-	data.colour = glm::vec3(0.25, 0.25, 0.25);
+	data.colour = backgroundColour;
 	data.coloured = charData.Coloured() ? 1 : 0;
 }
 
@@ -479,9 +484,6 @@ void TypeSetter::TruncatePreviousPrint()
 
 bool TypeSetter::LayoutHorizontal(PrintInfo& print)
 {
-	if (maxWidth == 0 || maxHeight == 0)
-		return true;	// Already out of space
-
 	auto savedCurXpos = curXpos;
 	auto savedHeights = *heights;
 
@@ -796,7 +798,7 @@ void TypeSetter::Print(VulkanSystem& system, FontData* primaryFont)
 	if (horizontalAlignment == HorizontalAlignment::Right)
 		horizontalAdjustment = maxWidth - backdropWidth;
 
-	SetupBackdrop(primaryFont->GetNextPosData(system), primaryFont->GetChar('.'), xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight());
+	SetupBackdrop(primaryFont->GetNextPosData(system), primaryFont->GetChar('.'), xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight(), backgroundColour, verticalAlignment);
 
 	size_t curRow = 0;
 	size_t endOfCurrentRow = INVALID_SIZE;
@@ -890,4 +892,22 @@ bool TypeSetter::LayoutStrings(FontData* primaryFont)
 void TypeSetter::TrimPrints(size_t newSize)
 {
 	prints.erase(prints.begin() + newSize, prints.end());
+}
+
+bool FontData::Update(const std::vector<const PrintInfo*>& prints)
+{
+	bool anyNewChars = false;
+	for (auto& print : prints)
+	{
+		if (print->font == this)
+		{
+			if (AddCharacters(print->text))
+				anyNewChars = true;
+		}
+	}
+
+	if (anyNewChars)
+		LoadFont(prints);	// Load font if any new characters
+
+	return anyNewChars;
 }
