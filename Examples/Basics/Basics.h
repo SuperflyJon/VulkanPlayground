@@ -10,8 +10,8 @@ public:
 	BasicStrings(int resVal);
 	~BasicStrings();
 
-	void LoadStrings() override;
-	void PrintText(bool app3D, bool lightApp) override;
+	void LoadStrings(VulkanSystem& system) override;
+	void PrintMainText(bool app3D, bool lightApp) override;
 	void SetGroupStrings(const std::string& groups, const std::string& subGroup)
 	{
 		groupString = groups;

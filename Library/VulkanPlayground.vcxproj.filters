@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Fonts">
-      <UniqueIdentifier>{69cf9d64-ab23-40f9-8bc7-d05c9449a97f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -99,20 +96,11 @@
     <ClInclude Include="VulkanPlayground\UBO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BitmapFontInternal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanPlayground\TextHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Fonts\Freetype.h">
-      <Filter>Fonts</Filter>
-    </ClInclude>
-    <ClInclude Include="CharData.h">
-      <Filter>Fonts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -129,9 +117,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SwapChain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WinUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp">
@@ -184,9 +169,6 @@
     </ClCompile>
     <ClCompile Include="VulkanPlayground\TextHelper.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Fonts\Freetype.cpp">
-      <Filter>Fonts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

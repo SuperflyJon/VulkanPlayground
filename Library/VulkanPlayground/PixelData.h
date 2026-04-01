@@ -7,8 +7,8 @@ namespace gli
 
 struct PixelData
 {
-	PixelData(uint32_t width, uint32_t height, uint32_t depth) : pixels(nullptr), width(width), height(height), mipLevels(depth), size(0), texture(nullptr), isCube(false) {}
-	PixelData() : pixels(nullptr), width(0), height(0), mipLevels(0), size(0), texture(nullptr), isCube(false) {}
+	PixelData(uint32_t width, uint32_t height, uint32_t depth) : pixelData(nullptr), width(width), height(height), mipLevels(depth), size(0), texture(nullptr), isCube(false) {}
+	PixelData() : pixelData(nullptr), width(0), height(0), mipLevels(0), size(0), texture(nullptr), isCube(false) {}
 	~PixelData() { TidyUp(); }
 	void TidyUp();
 
@@ -17,7 +17,7 @@ struct PixelData
 	void LoadKTXCube(const std::string& filename);
 	void LoadKTXArray(const std::string& filename);
 
-	unsigned char* pixels;
+	unsigned char* pixelData;
 	uint32_t width, height;
 	uint32_t mipLevels;
 	uint64_t size;

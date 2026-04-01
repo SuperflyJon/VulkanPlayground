@@ -2,18 +2,18 @@
 #include "Shader.h"
 #include "Common.h"
 #include "System.h"
-#include "WinUtil.h"
+#include "Utils/FileUtil.h"
 
 void Shader::Load(VulkanSystem& system, const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader)
 {
 	vertexModule = nullptr, fragmentModule = nullptr, geometryModule = nullptr;
 	bool existing = true;
 	if (!vertexShader.empty())
-		existing &= system.FindModule(WinUtils::FindFile(vertexShader + ".vert.spv"), vertexModule);
+		existing &= system.FindModule(FileUtils::FindFile(vertexShader + ".vert.spv"), vertexModule);
 	if (!fragmentShader.empty())
-		existing &= system.FindModule(WinUtils::FindFile(fragmentShader + ".frag.spv"), fragmentModule);
+		existing &= system.FindModule(FileUtils::FindFile(fragmentShader + ".frag.spv"), fragmentModule);
 	if (!geometryShader.empty())
-		existing &= system.FindModule(WinUtils::FindFile(geometryShader + ".geom.spv"), geometryModule);
+		existing &= system.FindModule(FileUtils::FindFile(geometryShader + ".geom.spv"), geometryModule);
 
 	if (vertexModule)
 	{

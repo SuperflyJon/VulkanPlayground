@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include "TextHelper.h"
 #include "BitmapFont.h"
-#include "WinUtil.h"
 #include "RenderPass.h"
 
 ITextHelper::ITextHelper()
@@ -11,10 +10,10 @@ ITextHelper::ITextHelper()
 }
 ITextHelper::~ITextHelper() = default;
 
-void ITextHelper::Tidy(VulkanSystem& system)
+void ITextHelper::Tidy(VulkanSystem& _system)
 {
 	for (auto font : fontsInuse)
-		font->Tidy(system);
+		dynamic_cast<Vulkan2DFont*>(font)->Tidy(_system);
 
 	for (auto typeSetter : registeredTypeSetters)
 		typeSetter->Reset(true);
@@ -36,14 +35,12 @@ TypeSetter& TextHelperBase::PrintStringFont(FontData& font, TypeSetter& typeSett
 	{
 		registeredTypeSetters.insert(&typeSetter);
 		typeSetter.PrintStringInternal(font, unicodeString, fontColour, scale);
-		fontsInuse.insert(&font);
 	}
 	return typeSetter;
 }
 
 TextHelperBase::TextHelperBase()
-	: 
-	generalKeys("General|F11,Toggle Full screen|R,Reset scene|P,Show FPS|Shift+P,Toggle vSync|Escape,exit"),
+	: generalKeys("General|F11,Toggle Full screen|R,Reset scene|P,Show FPS|Shift+P,Toggle vSync|Escape,exit"),
 	movementKeys("3d movement|Left button + mouse,Look around|Right button + mouse,Rotate world|Mouse wheel,Zoom|WASD,Move around"),
 	lightKeys("Light|1,Toggle ambient light|2,Toggle diffuse light|3,Toggle specular light")
 {
@@ -147,7 +144,7 @@ void TextHelperBase::PrintKeySection(const UnicodeString& keyString)
 	}
 }
 
-void TextHelperBase::PrintText(bool App3D, bool lightApp)
+void TextHelperBase::PrintMainText(bool App3D, bool lightApp)
 {
 	PrintKeySection(generalKeys);
 
@@ -161,57 +158,28 @@ void TextHelperBase::PrintText(bool App3D, bool lightApp)
 FontData& ITextHelper::GetFont()
 {
 	if (defaultFont == nullptr)
-		defaultFont = std::make_unique<Vulkan2DFont>();
+		defaultFont = std::make_unique<Vulkan2DFont>(*pSystem);
 	return *defaultFont;
 }
 
-void ITextHelper::CreateFontCommandBuffers(VulkanSystem& system, RenderPass* fontRenderPass)
+void ITextHelper::CreateFontCommandBuffers(RenderPass* fontRenderPass)
 {
 	if (fontRenderPass)
 	{
-		fontRenderPass->CreateCmdBuffers(system, [this, &system](VkCommandBuffer commandBuffer)
+		fontRenderPass->CreateCmdBuffers(*pSystem, [this](VkCommandBuffer commandBuffer)
 			{
-				system.DebugStartRegion(commandBuffer, "2dFont Drawing", { 0.0f, 1.0f, 1.0f });
+				pSystem->DebugStartRegion(commandBuffer, "2dFont Drawing", { 0.0f, 1.0f, 1.0f });
 				for (auto font : fontsInuse)
-					font->Draw(system, commandBuffer);
-				system.DebugEndRegion(commandBuffer);
+					dynamic_cast<Vulkan2DFont*>(font)->Draw(commandBuffer);
+				pSystem->DebugEndRegion(commandBuffer);
 			}, "FontCmds");
 	}
 }
 
-void ITextHelper::Process(VulkanSystem& system, bool* redraw, bool *recreate)
+#include "Fonts/BitmapFontInternal.h"
+
+void ITextHelper::Process(bool* redraw, bool* recreate)
 {
-	*redraw = false;
-	*recreate = false;
-
-	std::vector<const PrintInfo*> outofdatePrints;
-	for (auto checkTS : registeredTypeSetters)
-	{
-		if (checkTS->OutOfDate())
-		{
-			for (auto& print : checkTS->GetPrints())
-			{
-				outofdatePrints.push_back(&print);
-			}
-		}
-	}
-	if (outofdatePrints.empty())
-		return;
-
-	for (auto font : fontsInuse)
-	{
-		if (font->Update(outofdatePrints))
-			*recreate = true;
-	}
-
-	auto primaryFont = *fontsInuse.begin();
-	for (auto typeSetter : registeredTypeSetters)
-	{
-		if (typeSetter->LayoutStrings(primaryFont))
-			*redraw = true;
-	}
-	for (auto typeSetter : registeredTypeSetters)
-	{
-		typeSetter->Print(system, primaryFont);
-	}
+	auto currentFonts = ProcessPrints(registeredTypeSetters, redraw, recreate);
+	fontsInuse.insert(currentFonts.begin(), currentFonts.end());
 }

@@ -1,6 +1,7 @@
 #include <VulkanPlayground\Includes.h>
 #include <VulkanPlayground\WindowSystem.h>
-#include <VulkanPlayground\WinUtil.h>
+#include "Utils\ConUtil.h"
+#include "Utils\StrUtil.h"
 #include "VulkanPlayground\BitmapFont.h"
 #include "Basics.h"
 #include "AppGroups.h"
@@ -14,7 +15,7 @@ bool CheckKeys(GLFW& window, void* data)
 
 int main()
 {
-	WinUtils::EnableUnicodeConsoleOutput();
+	ConUtils::EnableUnicodeConsoleOutput();
 
 	try
 	{
@@ -23,8 +24,8 @@ int main()
 		do
 		{
 			auto& app = appGroups.GetCurrentApp();
-			app.GetTextHelper()->LoadStrings();
-			WinUtils::OutputYellow(WinUtils::UTF32toUTF8(((BasicStrings*)app.GetTextHelper())->GetTitle()));
+			app.GetTextHelper()->LoadStrings(windowSystem.GetVulkanSystem());
+			ConUtils::OutputYellow(StrUtils::UTF32toUTF8(((BasicStrings*)app.GetTextHelper())->GetTitle()));
 
 			windowSystem.RunApp(app);
 		} while (windowSystem.Running() && appGroups.SceneChanged());
@@ -33,7 +34,7 @@ int main()
 	}
 	catch (std::exception& err)
 	{
-		WinUtils::OutputError("Fatal error: " + std::string(err.what()));
+		ConUtils::OutputError("Fatal error: " + std::string(err.what()));
 		return false;
 	}
 }
@@ -43,8 +44,9 @@ BasicStrings::BasicStrings(int resVal)
 {}
 BasicStrings::~BasicStrings() = default;
 
-void BasicStrings::LoadStrings()
+void BasicStrings::LoadStrings(VulkanSystem& system)
 {
+	pSystem = &system;
 	if (stringBase != 0 && appTitle.empty())
 	{
 		appTitle.Load(stringBase);
@@ -58,13 +60,13 @@ void BasicStrings::LoadStrings()
 	}
 }
 
-void BasicStrings::PrintText(bool app3D, bool lightApp)
+void BasicStrings::PrintMainText(bool app3D, bool lightApp)
 {
 	if (!appTitle.empty())
 	{
 		PrintString(*mainText, groupString, glm::vec3(0.75f), 0.6f);
 		
-		static Vulkan2DFont headingFont("Times New Roman", 48);
+		static Vulkan2DFont headingFont(*pSystem, "Times New Roman", 48);
 		PrintStringFont(headingFont, *mainText, appTitle, glm::vec3(1, 1, .3));
 		PrintString(*mainText, subGroupString, glm::vec3(0.75f), 0.6f);
 
@@ -74,5 +76,5 @@ void BasicStrings::PrintText(bool app3D, bool lightApp)
 
 	PrintKeySection(appKeys);
 
-	TextHelperBase::PrintText(app3D, lightApp);
+	TextHelperBase::PrintMainText(app3D, lightApp);
 }

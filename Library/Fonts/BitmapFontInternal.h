@@ -1,12 +1,23 @@
 #pragma once
 
-#include "CharData.h"
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <functional>
+#include <map>
+#include <memory>
+#include <set>
+#include <glm/glm.hpp>
+
+class CharData;
+struct PixelData;
 
 struct IsWhiteSpaceFn
 {
 	bool operator()(char32_t character) const { return character == ' ' || character == '\t' || character == '\n'; }
 };
 inline bool IsWhiteSpace(char32_t character) { return IsWhiteSpaceFn()(character); }
+
 template<class iterator_type> uint32_t CountNonWhiteSpace(iterator_type begin, iterator_type end)
 {
 	return (uint32_t)std::count_if(begin, end, std::not_fn(IsWhiteSpaceFn()));
@@ -16,16 +27,19 @@ template<class string_type> uint32_t CountNonWhiteSpace(const string_type& str)
 	return CountNonWhiteSpace(str.begin(), str.end());
 }
 
+class FontData;
+class TypeSetter;
+extern std::set<FontData*> ProcessPrints(const std::set<TypeSetter*>& typeSetters, bool* redraw, bool* recreate);
+
 class Heights
 {
 public:
 	void Init();
 	void Add();
-	void ChangePreviousEmptyLineHeight(size_t pixels);
 	void UpdateSpecialHeights(const Heights& oldHeights);
 	void Update(float max, float min, float scale, size_t addedChars, bool includesSpecialChar);
-	size_t GetTotalHeight() const;
-	float GetRowOffset(size_t) const;
+	size_t GetTotalHeight(size_t padding) const;
+	float GetRowOffset(size_t row, size_t padding) const;
 	size_t NumRows() const { return maxHeights.size(); }
 	size_t GetCharsInRow(size_t row) const { return numCharsInLine[row]; }
 	void RemoveAnyEmptyLastRows();
@@ -39,10 +53,8 @@ private:
 class Packer
 {
 public:
-	Packer()
-	{
-	}
-	explicit Packer(size_t textureWidth, size_t edgePadding)
+	explicit Packer(size_t textureWidth, size_t edgePadding, bool swappedY = false)
+		: swappedY(swappedY)
 	{
 		Setup(textureWidth, edgePadding);
 	}
@@ -62,7 +74,8 @@ public:
 	}
 
 	bool CalcPackSize(size_t width, size_t height);
-	template<class TYPE> void Pack(CharData& charData, TYPE packBuffer);
+
+	unsigned char* Pack(size_t numPixels, const std::map<char32_t, std::unique_ptr<CharData>>& charList, bool colour);
 
 	void NewRow(float scale = 1.0f)
 	{
@@ -79,6 +92,11 @@ public:
 		return curHeight;
 	}
 
+private:
+	template<class TYPE> void Pack(CharData& charData, TYPE packBuffer);
+	template<typename PIX> unsigned char* PackAll(size_t numPixels, const std::map<char32_t, std::unique_ptr<CharData>>& charList);
+
+	bool swappedY;
 	size_t rowWidth;
 
 	size_t curRow;

@@ -7,7 +7,9 @@
 #include "Extensions.h"
 #include "Pipeline.h"
 #include "Application.h"
-#include "WinUtil.h"
+#include "Utils/ConUtil.h"
+#include "Utils/StrUtil.h"
+#include "Utils/FileUtil.h"
 #include "System.h"
 #include <regex>
 #include <numeric>
@@ -44,7 +46,7 @@ namespace VulkanPlayground
 			if (throwOnError)
 				throw std::runtime_error(ss.str());
 			else
-				WinUtils::OutputError(ss.str());
+				ConUtils::OutputError(ss.str());
 		}
 		return (result == VK_SUCCESS);
 	}
@@ -259,7 +261,7 @@ namespace VulkanPlayground
 		std::string message;
 		if (m.size() == 3)
 		{
-			WinUtils::OutputBlue(m[1]);
+			ConUtils::OutputBlue(m[1]);
 			message = m[2];
 		}
 		else
@@ -270,18 +272,18 @@ namespace VulkanPlayground
 			std::regex_search(message, m, std::regex(R"((.*)(The Vulkan spec states.*))"));
 			if (m.size() == 3)
 			{
-				WinUtils::OutputError(m[1]);
-				WinUtils::OutputBlue(m[2]);
+				ConUtils::OutputError(m[1]);
+				ConUtils::OutputBlue(m[2]);
 			}
 			else
-				WinUtils::OutputError(message);
+				ConUtils::OutputError(message);
 		}
 		else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			WinUtils::OutputWarning(message);
+			ConUtils::OutputWarning(message);
 		else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 			std::cout << message;
 		else
-			WinUtils::OutputBlue(message);
+			ConUtils::OutputBlue(message);
 
 		std::cout << std::endl;
 	}
@@ -416,7 +418,7 @@ namespace VulkanPlayground
 
 		VkShaderModule shaderModule;
 		CHECK_VULKAN(vkCreateShaderModule(system.GetDevice(), &shaderModuleInfo, nullptr, &shaderModule), "Failed to create shader module!");
-		system.DebugNameObject(shaderModule, VK_OBJECT_TYPE_SHADER_MODULE, "ShaderModule", WinUtils::GetJustFileName(filename));
+		system.DebugNameObject(shaderModule, VK_OBJECT_TYPE_SHADER_MODULE, "ShaderModule", FileUtils::GetJustFileName(filename));
 		return shaderModule;
 	}
 
@@ -472,7 +474,7 @@ namespace VulkanPlayground
 		std::string searchdir;
 		if (!projectName.empty())
 			searchdir = projectName + '\\';
-		return WinUtils::FindFile(searchdir + "models\\" + modelFile);
+		return FileUtils::FindFile(searchdir + "models\\" + modelFile);
 	}
 
 	glm::vec3 CalculateFrontVector(float yaw, float pitch)
@@ -515,12 +517,12 @@ namespace VulkanPlayground
 
 UnicodeString::UnicodeString(const std::string& utf8String)
 {
-	string = WinUtils::UTF16toUTF32(WinUtils::Widen(utf8String));
+	string = StrUtils::UTF16toUTF32(StrUtils::Widen(utf8String));
 }
 
 UnicodeString::UnicodeString(const std::wstring& utf16String)
 {
-	string = WinUtils::UTF16toUTF32(utf16String);
+	string = StrUtils::UTF16toUTF32(utf16String);
 }
 
 UnicodeString::UnicodeString(const std::u32string& utf32String)
@@ -541,7 +543,7 @@ void UnicodeString::Load(int resourceID)
 		string = pos->second;
 	else
 	{
-		string = WinUtils::UTF16toUTF32(WinUtils::LoadResourceString(resourceID));
+		string = StrUtils::UTF16toUTF32(StrUtils::LoadResourceString(resourceID));
 		strings[resourceID] = string;
 	}
 }

@@ -1,7 +1,7 @@
 
 #include "stdafx.h"
 #include "WindowSystem.h"
-#include "WinUtil.h"
+#include "Utils/ConUtil.h"
 #include "Application.h"
 #include "SwapChain.h"
 #include "RenderPass.h"
@@ -53,7 +53,7 @@ void WindowSystem::RunApp(VulkanApplication& app)
 			app.UpdateCamera(fpsTimer.LastFrameTime(), window.GetEventData());
 			app.ResetPrints();
 			app.AppUpdateScene(system, fpsTimer);
-			app.ProcessPrints(system, swapChain.GetWorkingExtent());
+			app.ProcessPrints(swapChain.GetWorkingExtent());
 
 			if (!app.ObjectsCreated(system, renderPasses))
 				continue;	// Loop around to recreate things
@@ -87,7 +87,7 @@ void WindowSystem::RunApp(VulkanApplication& app)
 	}
 	catch (std::runtime_error & err)
 	{
-		WinUtils::OutputError("Application terminated, fatal error: " + std::string(err.what()));
+		ConUtils::OutputError("Application terminated, fatal error: " + std::string(err.what()));
 		window.ExitApplication();
 	}
 	system.DeviceWaitIdle();
@@ -113,7 +113,7 @@ void WindowSystem::Close()
 	}
 	catch (std::runtime_error & err)
 	{
-		WinUtils::OutputError("Failed to tidy up, fatal error: " + std::string(err.what()));
+		ConUtils::OutputError("Failed to tidy up, fatal error: " + std::string(err.what()));
 	}
 
 #ifndef _DEBUG

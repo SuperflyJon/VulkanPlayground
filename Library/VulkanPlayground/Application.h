@@ -104,7 +104,7 @@ public:
 	void TidyPipelines(VulkanSystem& system);
 
 	void ResetPrints();
-	void ProcessPrints(VulkanSystem& system, VkExtent2D workingExtent);
+	void ProcessPrints(VkExtent2D workingExtent);
 
 	virtual void AppSetupObjects(VulkanSystem& system, RenderPasses& renderPasses, VkExtent2D workingExtent);
 	virtual void AppResetScene() {}

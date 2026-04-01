@@ -2,16 +2,16 @@
 #include "stdafx.h"
 #include "AssImp.h"
 #include "Model.h"
-#include "WinUtil.h"
+#include "Utils/FileUtil.h"
 
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-class AssImpDelayed : public WinUtils::DelayedLib
+class AssImpDelayed : public FileUtils::DelayedLib
 {
 public:
-	AssImpDelayed() : WinUtils::DelayedLib("assimp-vc142-mt.dll") {}
+	AssImpDelayed() : FileUtils::DelayedLib("assimp-vc142-mt.dll") {}
 
 	typedef const aiScene* (*aiImportFileFP)(const char* pFile, unsigned int pFlags);
 	typedef const char* (*aiGetErrorStringFP)();

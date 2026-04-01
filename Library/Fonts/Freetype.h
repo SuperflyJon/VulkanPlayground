@@ -1,6 +1,6 @@
 #pragma once
 
-#include "..\CharData.h"
+#include "CharData.h"
 
 typedef void* GlyphPtr;
 

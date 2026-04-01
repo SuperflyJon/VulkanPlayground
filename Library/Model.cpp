@@ -2,7 +2,7 @@
 #include "Model.h"
 #include "AssImp.h"
 #include "Pipeline.h"
-#include "WinUtil.h"
+#include "Utils/StrUtil.h"
 #include "System.h"
 #include "EventData.h"
 #include "Camera.h"
@@ -44,11 +44,11 @@ void Model::Load(const std::string& modelFilename, const std::vector<Attribs::At
 		{
 			auto bytesUsed = vertices.size() + indices.size() * sizeof(indices[0]);
 			auto nonIndexedBytesUsed = indices.size() * vertexStride;
-			std::cout << WinUtils::ThousandSep(vertices.size() / vertexStride) << " vertices, " << WinUtils::ThousandSep(indices.size()) << " indices, " << WinUtils::FormatDataSize(bytesUsed) << " (indices saved " << WinUtils::FormatDataSize(nonIndexedBytesUsed - bytesUsed) << ")\n";
+			std::cout << StrUtils::ThousandSep(vertices.size() / vertexStride) << " vertices, " << StrUtils::ThousandSep(indices.size()) << " indices, " << StrUtils::FormatDataSize(bytesUsed) << " (indices saved " << StrUtils::FormatDataSize(nonIndexedBytesUsed - bytesUsed) << ")\n";
 		}
 		else
 		{
-			std::cout << WinUtils::ThousandSep(vertices.size() / vertexStride) << " vertices, " << WinUtils::FormatDataSize(vertices.size()) << "\n";
+			std::cout << StrUtils::ThousandSep(vertices.size() / vertexStride) << " vertices, " << StrUtils::FormatDataSize(vertices.size()) << "\n";
 		}
 	}
 }

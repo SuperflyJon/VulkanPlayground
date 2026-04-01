@@ -204,7 +204,7 @@ void BufferManager::CreateGpuImage(VulkanSystem& system, Image& image, const Pix
 		numFaces = 1;
 	}
 	TansitionImageLayout(system, transferQueuePool, image.GetImage(), pd.mipLevels, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, numFaces);
-	CopyToStagingBuffer(system, pd.pixels, pd.size);
+	CopyToStagingBuffer(system, pd.pixelData, pd.size);
 
 	if (!ktxImage)
 	{

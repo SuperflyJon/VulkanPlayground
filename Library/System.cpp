@@ -3,7 +3,7 @@
 #include "Common.h"
 #include "Application.h"
 #include "Extensions.h"
-#include "WinUtil.h"
+#include "Utils/ConUtil.h"
 #include "TextHelper.h"
 
 VulkanSystem::VulkanSystem()
@@ -193,10 +193,10 @@ void DebugMarker::NameObject(VkDevice device, void* object, VkObjectType objectT
 
 	if (VulkanPlayground::showObjectCreationMessages)
 	{
-		WinUtils::OutputGreen(std::string(debugOutputIndent * 2, ' ') + name, true, false);
+		ConUtils::OutputGreen(std::string(debugOutputIndent * 2, ' ') + name, true, false);
 		std::stringstream ss;
 		ss << " Using " << GetObjectName(objectType) << " (" << object << ")";
-		WinUtils::OutputGreen(ss.str(), false);
+		ConUtils::OutputGreen(ss.str(), false);
 	}
 }
 

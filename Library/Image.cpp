@@ -3,7 +3,7 @@
 #include "Image.h"
 #include "PixelData.h"
 #include "System.h"
-#include "WinUtil.h"
+#include "Utils/FileUtil.h"
 
 #pragma warning(push)
 #pragma warning(disable:26451 26495 6001 6262 6308 6387 28182 4310 4100)	// Disable some warnings in external code
@@ -15,10 +15,10 @@
 void PixelData::Load(const std::string& filename)
 {
 	int w, h, channelsInImage;
-	pixels = stbi_load(filename.c_str(), &w, &h, &channelsInImage, STBI_rgb_alpha);
+	pixelData = stbi_load(filename.c_str(), &w, &h, &channelsInImage, STBI_rgb_alpha);
 	width = w;
 	height = h;
-	if (!pixels)
+	if (!pixelData)
 		throw std::runtime_error("Failed to load texture image");
 
 	size = (uint64_t)width * (uint64_t)height * (uint64_t)4;	// 4 == rgba
@@ -34,7 +34,7 @@ void PixelData::LoadKTX(const std::string& filename)
 	height = text2d[0].extent().y;
 	mipLevels = (uint32_t)text2d.levels();
 	size = text2d.size();
-	pixels = (unsigned char*)text2d.data();
+	pixelData = (unsigned char*)text2d.data();
 }
 
 void PixelData::LoadKTXCube(const std::string& filename)
@@ -47,7 +47,7 @@ void PixelData::LoadKTXCube(const std::string& filename)
 	mipLevels = (uint32_t)texture->levels();
 	size = texture->size();
 
-	pixels = (unsigned char*)texture->data(0, 0, 0);
+	pixelData = (unsigned char*)texture->data(0, 0, 0);
 }
 
 void PixelData::LoadKTXArray(const std::string& filename)
@@ -59,7 +59,7 @@ void PixelData::LoadKTXArray(const std::string& filename)
 	mipLevels = (uint32_t)texture->levels();
 	size = texture->size();
 
-	pixels = (unsigned char*)texture->data(0, 0, 0);
+	pixelData = (unsigned char*)texture->data(0, 0, 0);
 }
 
 uint32_t PixelData::GetNumLayers() const
@@ -148,60 +148,60 @@ void PixelData::TidyUp()
 {
 	if (texture)
 		delete texture;
-	else if (pixels)
+	else if (pixelData)
 	{
-		stbi_image_free(pixels);
-		pixels = nullptr;
+		stbi_image_free(pixelData);
+		pixelData = nullptr;
 	}
 }
 
 void Texture::Load(VulkanSystem& system, const std::string& filename, VkFormat format, bool createSampler)
 {
-	if (!WinUtils::FileExists(filename))
+	if (!FileUtils::FileExists(filename))
 		throw std::runtime_error("Texture file: " + filename + " does not exist");
 
 	PixelData pd;
-	bool isKTX = WinUtils::GetExtension(filename) == "ktx";
+	bool isKTX = FileUtils::GetExtension(filename) == "ktx";
 	if (isKTX)
 		pd.LoadKTX(filename);
 	else
 		pd.Load(filename);
 
-	system.CreateGpuImage(system, texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, (isKTX ? pd.GetNumFaces() : 0), WinUtils::GetJustFileName(filename));
+	system.CreateGpuImage(system, texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, (isKTX ? pd.GetNumFaces() : 0), FileUtils::GetJustFileName(filename));
 
 	mipLevels = pd.mipLevels;
-	textureImageView = VulkanPlayground::CreateImageView(system, texture.GetImage(), mipLevels, format, VK_IMAGE_ASPECT_COLOR_BIT, "Texture {" + WinUtils::GetJustFileName(filename) + "}");
+	textureImageView = VulkanPlayground::CreateImageView(system, texture.GetImage(), mipLevels, format, VK_IMAGE_ASPECT_COLOR_BIT, "Texture {" + FileUtils::GetJustFileName(filename) + "}");
 	if (createSampler)
-		CreateSampler(system, WinUtils::GetJustFileName(filename));
+		CreateSampler(system, FileUtils::GetJustFileName(filename));
 }
 
 void Texture::LoadCubeMap(VulkanSystem& system, const std::string& filename, VkFormat format)
 {
 	PixelData pd;
-	if (WinUtils::GetExtension(filename) == "ktx")
+	if (FileUtils::GetExtension(filename) == "ktx")
 		pd.LoadKTXCube(filename);
 	else
 		throw std::runtime_error("Only ktx format supported for CubeMaps");
 
 	mipLevels = pd.mipLevels;
-	system.CreateGpuImage(system, texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, pd.GetNumFaces(), WinUtils::GetJustFileName(filename), VK_IMAGE_VIEW_TYPE_CUBE);
+	system.CreateGpuImage(system, texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, pd.GetNumFaces(), FileUtils::GetJustFileName(filename), VK_IMAGE_VIEW_TYPE_CUBE);
 	textureImageView = VulkanPlayground::CreateImageView(system, texture.GetImage(), mipLevels, format, VK_IMAGE_ASPECT_COLOR_BIT, "CubeMap {" + filename + "}", VK_IMAGE_VIEW_TYPE_CUBE, 6);
-	CreateSampler(system, WinUtils::GetJustFileName(filename));
+	CreateSampler(system, FileUtils::GetJustFileName(filename));
 }
 
 void Texture::LoadArray(VulkanSystem& system, const std::string& filename, VkFormat format)
 {
 	PixelData pd;
-	if (WinUtils::GetExtension(filename) == "ktx")
+	if (FileUtils::GetExtension(filename) == "ktx")
 		pd.LoadKTXArray(filename);
 	else
 		throw std::runtime_error("Only ktx format supported for TextureArrays");
 
 	numLayers = pd.GetNumLayers();
 	mipLevels = pd.mipLevels;
-	system.CreateGpuImage(system,texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, pd.GetNumFaces() * pd.GetNumLayers(), WinUtils::GetJustFileName(filename));
+	system.CreateGpuImage(system,texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, pd.GetNumFaces() * pd.GetNumLayers(), FileUtils::GetJustFileName(filename));
 	textureImageView = VulkanPlayground::CreateImageView(system, texture.GetImage(), mipLevels, format, VK_IMAGE_ASPECT_COLOR_BIT, "TextureArray {" + filename + "}", VK_IMAGE_VIEW_TYPE_2D_ARRAY, pd.GetNumFaces() * pd.GetNumLayers());
-	CreateSampler(system, WinUtils::GetJustFileName(filename));
+	CreateSampler(system, FileUtils::GetJustFileName(filename));
 }
 
 void Texture::Create2dTexture(VulkanSystem& system, PixelData& pd, VkFormat format, const std::string& debugName)
@@ -226,62 +226,62 @@ void Texture::Create3dTexture(VulkanSystem& system, PixelData& pd, VkFormat form
 void Texture::Load3dTexture(VulkanSystem& system, const std::string& filename, VkFormat format)
 {
 	PixelData pd;
-	if (WinUtils::GetExtension(filename) == "ktx")
+	if (FileUtils::GetExtension(filename) == "ktx")
 		pd.LoadKTXArray(filename);
 	else
 		throw std::runtime_error("Only ktx format supported for cubemaps");
 
 	numLayers = pd.GetNumLayers();
 	pd.mipLevels = pd.GetNumFaces() * pd.GetNumLayers();
-	Create3dTexture(system, pd, format, WinUtils::GetJustFileName(filename));
+	Create3dTexture(system, pd, format, FileUtils::GetJustFileName(filename));
 }
 
 void Texture::LoadCubeIntoTextures(VulkanSystem& system, Texture textures[6], const std::string& filename, VkFormat format)
 {
 	PixelData pd;
-	if (WinUtils::GetExtension(filename) == "ktx")
+	if (FileUtils::GetExtension(filename) == "ktx")
 		pd.LoadKTXCube(filename);
 	else
 		throw std::runtime_error("Only ktx format supported for cubemaps");
 
 	pd.size = pd.size / 6;
-	auto pixels = pd.pixels;
+	auto pixels = pd.pixelData;
 	for (int i = 0; i < 6; i++)
 	{
-		pd.pixels = pixels;
+		pd.pixelData = pixels;
 		pixels += pd.size;
-		system.CreateGpuImage(system, textures[i].texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, 1, WinUtils::GetJustFileName(filename));
+		system.CreateGpuImage(system, textures[i].texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, 1, FileUtils::GetJustFileName(filename));
 		std::stringstream ss;
 		ss << "CubeTexture [" << i << "]";
 		textures[i].textureImageView = VulkanPlayground::CreateImageView(system, textures[i].texture.GetImage(), pd.mipLevels, format, VK_IMAGE_ASPECT_COLOR_BIT, ss.str() + " {" + filename + "}");
 		textures[1].textureSampler = nullptr;
 	}
 
-	textures[0].textureSampler = VulkanPlayground::CreateSampler(system, pd.mipLevels, textures[0].anisotopyLevel, textures[0].addressMode, textures[0].borderColor, textures[0].compareOp, WinUtils::GetJustFileName(filename));
+	textures[0].textureSampler = VulkanPlayground::CreateSampler(system, pd.mipLevels, textures[0].anisotopyLevel, textures[0].addressMode, textures[0].borderColor, textures[0].compareOp, FileUtils::GetJustFileName(filename));
 }
 
 void Texture::LoadTextureArrayIntoTextures(VulkanSystem& system, std::vector<Texture>& textures, const std::string& filename, VkFormat format)
 {
 	PixelData pd;
-	if (WinUtils::GetExtension(filename) == "ktx")
+	if (FileUtils::GetExtension(filename) == "ktx")
 		pd.LoadKTXArray(filename);
 	else
 		throw std::runtime_error("Only ktx format supported for cubemaps");
 
 	textures.resize(pd.GetNumLayers());
 	pd.size = pd.size / pd.GetNumLayers();
-	auto pixels = pd.pixels;
+	auto pixels = pd.pixelData;
 	for (uint32_t i = 0; i < pd.GetNumLayers(); i++)
 	{
-		pd.pixels = pixels;
+		pd.pixelData = pixels;
 		pixels += pd.size;
-		system.CreateGpuImage(system, textures[i].texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, 1, WinUtils::GetJustFileName(filename) + "{" + std::to_string(i) + "}");
+		system.CreateGpuImage(system, textures[i].texture, pd, VK_IMAGE_USAGE_SAMPLED_BIT, format, 1, FileUtils::GetJustFileName(filename) + "{" + std::to_string(i) + "}");
 		std::stringstream ss;
 		ss << "TextureArray [" << i << "]";
 		textures[i].textureImageView = VulkanPlayground::CreateImageView(system, textures[i].texture.GetImage(), pd.mipLevels, format, VK_IMAGE_ASPECT_COLOR_BIT, ss.str() + " {" + filename + "}", VK_IMAGE_VIEW_TYPE_2D);
 		textures[i].textureSampler = nullptr;
 	}
-	textures[0].textureSampler = VulkanPlayground::CreateSampler(system, pd.mipLevels, textures[0].anisotopyLevel, textures[0].addressMode, textures[0].borderColor, textures[0].compareOp, WinUtils::GetJustFileName(filename));	// Single sampler
+	textures[0].textureSampler = VulkanPlayground::CreateSampler(system, pd.mipLevels, textures[0].anisotopyLevel, textures[0].addressMode, textures[0].borderColor, textures[0].compareOp, FileUtils::GetJustFileName(filename));	// Single sampler
 }
 
 void Image::Create(VulkanSystem& system, VkFormat format, VkImageUsageFlags usage, uint32_t width, uint32_t height, uint32_t mipLevels, VkMemoryPropertyFlags properties, const std::string& debugName, std::set<uint32_t> queueIndicies, uint32_t numImages, VkImageViewType imageType)

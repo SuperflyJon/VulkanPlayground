@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 class VulkanSystem;
 class VulkanApplication;
 class SwapChain;
@@ -13,7 +15,6 @@ class Shader;
 #pragma warning(disable:4324)
 
 const uint32_t INVALID_VALUE = (uint32_t)-1;
-const size_t INVALID_SIZE = (size_t)-1;
 
 class ITidy
 {

@@ -1,12 +1,14 @@
-
+#include "pch.h"
 #include "Freetype.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include <string>
 #include <sstream>
 #include <iomanip>
 #include <map>
 #include <array>
-#include "../VulkanPlayground/WinUtil.h"
+#include "Utils/FileUtil.h"
+#include "Utils/WinUtil.h"
 
 constexpr char32_t TofuChar = 0x000025A1;	// Tofu unfound character
 constexpr char32_t UnicodeReplacementChar = 0xFFFD;	// Replacement character for invalid unicode sequences
@@ -14,15 +16,14 @@ constexpr char32_t UnicodeReplacementChar = 0xFFFD;	// Replacement character for
 std::string GetUnicodeOutput(char32_t character)
 {
 	std::ostringstream oss;
-	oss << character;
-	oss << "U+" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << character;
+	oss << "U+" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << (uint32_t)character;
 	return oss.str();
 }
 
-class FreetypeDelayed : public WinUtils::DelayedLib
+class FreetypeDelayed : public FileUtils::DelayedLib
 {
 public:
-	FreetypeDelayed() : WinUtils::DelayedLib("freetype.dll") {}
+	FreetypeDelayed() : FileUtils::DelayedLib("freetype.dll") {}
 
 	typedef FT_Error(*FT_Init_FreeTypeFP)(FT_Library* alibrary);
 	typedef FT_Error(*FT_New_FaceFP)(FT_Library library, const char* filepathname, FT_Long face_index, FT_Face* aface);
@@ -217,10 +218,10 @@ void FreeTypeFont::FindFontNames(const std::string& faceName)
 {
 	auto AddFont = [this](std::string fontFilename)
 		{
-			if (!WinUtils::FileExists(fontFilename))
+			if (!FileUtils::FileExists(fontFilename))
 			{
 				fontFilename = WinUtils::GetWindowsFontPath() + fontFilename;
-				if (!WinUtils::FileExists(fontFilename))
+				if (!FileUtils::FileExists(fontFilename))
 					return;
 			}
 			fontNames.push_back(fontFilename);

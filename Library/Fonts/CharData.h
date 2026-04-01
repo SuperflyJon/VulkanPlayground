@@ -10,27 +10,9 @@ typedef unsigned char byte;
 class CharData
 {
 public:
-	CharData(unsigned int indexVal, long advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data)
-	{
-		offsetX = 0;
-		offsetY = 0;
+	CharData(unsigned int indexVal, long advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data);
 
-		index = indexVal;
-		advance = advanceVal;
-		width = widthVal;
-		rows = rowsVal;
-		bitmap_left = bitmap_leftVal;
-		bitmap_top = bitmap_topVal;
-		coloured = colouredVal;
-
-		size_t dataSize = (size_t)width * rows;
-		if (coloured)
-			dataSize *= 4;	// rgba data
-		bitdata = std::make_unique<byte[]>(dataSize);
-		memcpy(bitdata.get(), data, dataSize);
-	}
-
-	template<class TYPE> void CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t curRowWidth);
+	template<class TYPE> void CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t rowWidth, bool swappedY);
 
 	void Unload() { index = 0; }
 	bool Loaded() const { return index != 0; }

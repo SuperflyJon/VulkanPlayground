@@ -149,8 +149,8 @@ void GenerateNoise(bool fractal, float noiseScale, PixelData* pd)
 	auto tStart = std::chrono::high_resolution_clock::now();
 
 	pd->size = (uint64_t)(widthSize * heightSize * depthSize * sizeof(uint8_t));
-	pd->pixels = new unsigned char[pd->size];
-	uint8_t* pData = (uint8_t*)pd->pixels;
+	pd->pixelData = new unsigned char[pd->size];
+	uint8_t* pData = (uint8_t*)pd->pixelData;
 
 	for (uint32_t z = 0; z < depthSize; z++)
 	{

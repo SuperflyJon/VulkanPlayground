@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Extensions.h"
 #include "Common.h"
-#include "WinUtil.h"
+#include "Utils/WinUtil.h"
 
 void Extensions::Setup(const std::vector<const char *>& glfwExtensions)
 {
