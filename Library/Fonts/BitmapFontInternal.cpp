@@ -119,16 +119,13 @@ CharData::CharData(unsigned int indexVal, long advanceVal, size_t widthVal, size
 }
 
 template<class TYPE>
-void CharData::CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t rowWidth, bool swappedY)
+void CharData::CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t rowWidth)
 {
 	offsetX = X;
 	offsetY = Y;
 
 	// Copy glyph
 	auto srcBuf = bitdata.get();
-
-	if (swappedY)
-		destBuf += rowWidth * rows;
 
 	for (size_t i = 0; i < height; i++)
 	{
@@ -140,10 +137,7 @@ void CharData::CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, 
 			memset(destBuf + (size_t)X + width, 0, sizeof(TYPE));
 		}
 
-		if (swappedY)
-			destBuf -= rowWidth;
-		else
-			destBuf += rowWidth;
+		destBuf += rowWidth;
 	}
 }
 
@@ -159,7 +153,7 @@ void Packer::Pack(CharData& charData, TYPE packBuffer)
 		curRowWidth = padding;
 	}
 
-	charData.CopyBitmapData(packBuffer + (size_t)rowWidth * curHeight, curRowWidth, curHeight, packHeights[curRow], rowWidth, swappedY);
+	charData.CopyBitmapData(packBuffer + (size_t)rowWidth * curHeight, curRowWidth, curHeight, packHeights[curRow], rowWidth);
 	curRowWidth += width;
 }
 
@@ -228,52 +222,4 @@ unsigned char* Packer::Pack(size_t numPixels, const std::map<char32_t, std::uniq
 		return PackAll<RGBA>(numPixels, charList);
 	else
 		return PackAll<Grey>(numPixels, charList);
-}
-
-#include "FontData.h"
-#include "TypeSetter.h"
-std::set<FontData*> ProcessPrints(const std::set<TypeSetter*>& typeSetters, bool* redraw, bool* recreate)
-{
-	*redraw = false;
-	*recreate = false;
-
-	std::set<FontData*> currentFonts;
-	std::vector<const PrintInfo*> outofdatePrints;
-	for (auto checkTS : typeSetters)
-	{
-		if (checkTS->OutOfDate())
-		{
-			for (auto& print : checkTS->GetPrints())
-			{
-				outofdatePrints.push_back(&print);
-				currentFonts.insert(print.font);
-			}
-		}
-	}
-	if (outofdatePrints.empty())
-		return currentFonts;
-
-	for (auto font : currentFonts)
-	{
-		if (font->Update(outofdatePrints))
-			*recreate = true;
-	}
-
-	for (auto typeSetter : typeSetters)
-	{
-		if (typeSetter->LayoutStrings())
-			*redraw = true;
-	}
-
-	for (auto font : currentFonts)
-	{
-		font->SetupBuffers();
-	}
-
-	for (auto typeSetter : typeSetters)
-	{
-		typeSetter->TypeSet();
-	}
-
-	return currentFonts;
 }

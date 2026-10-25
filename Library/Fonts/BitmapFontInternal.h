@@ -27,10 +27,6 @@ template<class string_type> uint32_t CountNonWhiteSpace(const string_type& str)
 	return CountNonWhiteSpace(str.begin(), str.end());
 }
 
-class FontData;
-class TypeSetter;
-extern std::set<FontData*> ProcessPrints(const std::set<TypeSetter*>& typeSetters, bool* redraw, bool* recreate);
-
 class Heights
 {
 public:
@@ -53,8 +49,7 @@ private:
 class Packer
 {
 public:
-	explicit Packer(size_t textureWidth, size_t edgePadding, bool swappedY = false)
-		: swappedY(swappedY)
+	explicit Packer(size_t textureWidth, size_t edgePadding)
 	{
 		Setup(textureWidth, edgePadding);
 	}
@@ -96,7 +91,6 @@ private:
 	template<class TYPE> void Pack(CharData& charData, TYPE packBuffer);
 	template<typename PIX> unsigned char* PackAll(size_t numPixels, const std::map<char32_t, std::unique_ptr<CharData>>& charList);
 
-	bool swappedY;
 	size_t rowWidth;
 
 	size_t curRow;

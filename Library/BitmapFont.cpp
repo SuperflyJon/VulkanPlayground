@@ -35,11 +35,11 @@ void Vulkan2DFont::RecordCharacter(char32_t character, float x, float y, const g
 	data.rgbColours = charData.Coloured() ? 1 : 0;
 }
 
-void Vulkan2DFont::SetupBackdrop(size_t x, size_t y, size_t backdropWidth, size_t backdropHeight, const glm::vec3& backgroundColour, VerticalAlignment verticalAlignment)
+void Vulkan2DFont::SetupBackdrop(size_t x, size_t y, size_t backdropWidth, size_t backdropHeight, const glm::vec3& backgroundColour)
 {	// Make a rougth background effect
 	const CharData& charData = GetChar('.');
 	PosData& data = GetNextPosData();
-	data.pos = glm::vec2((float)x, (verticalAlignment == VerticalAlignment::Up) ? (float)y - backdropHeight : (float)y);
+	data.pos = glm::vec2((float)x, (float)y - backdropHeight);
 	data.size = glm::vec2(backdropWidth, backdropHeight);
 	data.textorg = glm::uvec2((short)charData.OffsetX() + (charData.Width() + 1) / 2, (short)charData.OffsetY());
 	data.textoff = glm::uvec2(1, 1);

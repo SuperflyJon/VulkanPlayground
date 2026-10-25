@@ -1,9 +1,13 @@
 #pragma once
 
 #include "FontData.h"
+#include <set>
 
 class FontData;
 class Heights;
+class TypeSetter;
+
+extern std::set<FontData*> ProcessPrints(const std::set<TypeSetter*>& typeSetters, bool* redraw, bool* recreate);
 
 const size_t INVALID_SIZE = (size_t)-1;
 
@@ -14,7 +18,7 @@ public:
 
 	static const size_t TYPESET_PADDING = 4;
 
-	TypeSetter(size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE);
+	TypeSetter(size_t x = 0, size_t y = 0, size_t width = INVALID_SIZE, size_t height = INVALID_SIZE, YSwap swapY = YSwap::NoSwap);
 	~TypeSetter();
 
 	void SetVerticalAlignment(VerticalAlignment val) { verticalAlignment = val; }
@@ -52,6 +56,7 @@ private:
 	size_t xPos, yPos;
 	HorizontalAlignment horizontalAlignment;
 	VerticalAlignment verticalAlignment;
+	YSwap swapY;
 	float curXpos;
 	size_t maxWidth, maxHeight;
 	float maxRowWidth;

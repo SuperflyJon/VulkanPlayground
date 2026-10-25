@@ -176,8 +176,6 @@ void ITextHelper::CreateFontCommandBuffers(RenderPass* fontRenderPass)
 	}
 }
 
-#include "Fonts/BitmapFontInternal.h"
-
 void ITextHelper::Process(bool* redraw, bool* recreate)
 {
 	auto currentFonts = ProcessPrints(registeredTypeSetters, redraw, recreate);

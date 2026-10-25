@@ -14,6 +14,8 @@ class CharData;
 enum class HorizontalAlignment { Left, Right };
 enum class VerticalAlignment { Up, Down };
 
+enum class YSwap { NoSwap, Swap };
+
 struct PrintInfo
 {
 	std::u32string text;
@@ -26,7 +28,7 @@ struct PrintInfo
 class FontData
 {
 public:
-	FontData(const std::string& _faceName, int _fontSize, bool swapY = false);
+	FontData(const std::string& _faceName, int _fontSize);
 	virtual ~FontData();
 
 	const CharData& GetChar(char32_t character) const;
@@ -49,7 +51,7 @@ public:
 	int Ascent() const { return ascent; }
 
 	virtual void RecordCharacter(char32_t character, float x, float y, const glm::vec3& colour, float scale) = 0;
-	virtual void SetupBackdrop(size_t x, size_t y, size_t backdropWidth, size_t backdropHeight, const glm::vec3& backgroundColour, VerticalAlignment verticalAlignment) = 0;
+	virtual void SetupBackdrop(size_t x, size_t y, size_t backdropWidth, size_t backdropHeight, const glm::vec3& backgroundColour) = 0;
 
 	bool Update(const std::vector<const PrintInfo*>& prints);
 
@@ -68,5 +70,4 @@ protected:
 	std::map<char32_t, std::map<char32_t, int>> kerning;
 	int descent;
 	int ascent;
-	bool swapY;
 };

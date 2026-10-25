@@ -12,8 +12,8 @@ void TypeSetter::PrintStringInternal(FontData& fontData, const std::u32string& s
 	}
 }
 
-TypeSetter::TypeSetter(size_t x, size_t y, size_t width, size_t height)
-	: heights(new Heights())
+TypeSetter::TypeSetter(size_t x, size_t y, size_t width, size_t height, YSwap swapY)
+	: heights(new Heights()), swapY(swapY)
 {
 	horizontalAlignment = HorizontalAlignment::Left;
 	verticalAlignment = VerticalAlignment::Up;
@@ -28,7 +28,13 @@ size_t TypeSetter::NumRows() const
 float TypeSetter::GetRowPos(size_t row) const
 {
 	if (verticalAlignment == VerticalAlignment::Up)
-		return (int)yPos - (int)heights->GetTotalHeight(TypeSetter::TYPESET_PADDING) + heights->GetRowOffset(row, TypeSetter::TYPESET_PADDING);
+	{		
+		auto offset = (int)heights->GetTotalHeight(TypeSetter::TYPESET_PADDING) - heights->GetRowOffset(row, TypeSetter::TYPESET_PADDING);
+		if (swapY == YSwap::Swap)
+			return (int)yPos + offset;
+		else
+			return (int)yPos - offset;
+	}
 	else
 		return (int)yPos + heights->GetRowOffset(row, TypeSetter::TYPESET_PADDING);
 }
@@ -350,7 +356,7 @@ void TypeSetter::TypeSet()
 		horizontalAdjustment = maxWidth - backdropWidth;
 
 	auto &firstFont = *prints.front().font;
-	firstFont.SetupBackdrop(xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight(TypeSetter::TYPESET_PADDING), backgroundColour, verticalAlignment);
+	firstFont.SetupBackdrop(xPos + horizontalAdjustment, yPos, backdropWidth, heights->GetTotalHeight(TypeSetter::TYPESET_PADDING), backgroundColour);
 
 	size_t curRow = 0;
 	size_t endOfCurrentRow = INVALID_SIZE;
@@ -444,4 +450,50 @@ bool TypeSetter::LayoutStrings()
 void TypeSetter::TrimPrints(size_t newSize)
 {
 	prints.erase(prints.begin() + newSize, prints.end());
+}
+
+std::set<FontData*> ProcessPrints(const std::set<TypeSetter*>& typeSetters, bool* redraw, bool* recreate)
+{
+	*redraw = false;
+	*recreate = false;
+
+	std::set<FontData*> currentFonts;
+	std::vector<const PrintInfo*> outofdatePrints;
+	for (auto checkTS : typeSetters)
+	{
+		if (checkTS->OutOfDate())
+		{
+			for (auto& print : checkTS->GetPrints())
+			{
+				outofdatePrints.push_back(&print);
+				currentFonts.insert(print.font);
+			}
+		}
+	}
+	if (outofdatePrints.empty())
+		return currentFonts;
+
+	for (auto font : currentFonts)
+	{
+		if (font->Update(outofdatePrints))
+			*recreate = true;
+	}
+
+	for (auto typeSetter : typeSetters)
+	{
+		if (typeSetter->LayoutStrings())
+			*redraw = true;
+	}
+
+	for (auto font : currentFonts)
+	{
+		font->SetupBuffers();
+	}
+
+	for (auto typeSetter : typeSetters)
+	{
+		typeSetter->TypeSet();
+	}
+
+	return currentFonts;
 }

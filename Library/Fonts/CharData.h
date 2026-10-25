@@ -12,7 +12,7 @@ class CharData
 public:
 	CharData(unsigned int indexVal, long advanceVal, size_t widthVal, size_t rowsVal, int bitmap_leftVal, int bitmap_topVal, bool colouredVal, void* data);
 
-	template<class TYPE> void CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t rowWidth, bool swappedY);
+	template<class TYPE> void CopyBitmapData(TYPE* destBuf, size_t X, size_t Y, size_t height, size_t rowWidth);
 
 	void Unload() { index = 0; }
 	bool Loaded() const { return index != 0; }

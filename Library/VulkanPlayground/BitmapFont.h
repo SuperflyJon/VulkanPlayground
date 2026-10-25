@@ -28,7 +28,7 @@ public:
 
 	void SetupBuffers() override;
 	void RecordCharacter(char32_t character, float x, float y, const glm::vec3& colour, float scale) override;
-	void SetupBackdrop(size_t x, size_t y, size_t backdropWidth, size_t backdropHeight, const glm::vec3& backgroundColour, VerticalAlignment verticalAlignment) override;
+	void SetupBackdrop(size_t x, size_t y, size_t backdropWidth, size_t backdropHeight, const glm::vec3& backgroundColour) override;
 	uint32_t CurBufCharCount() const;
 
 	virtual void Reset()

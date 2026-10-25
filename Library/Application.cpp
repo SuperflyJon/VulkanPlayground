@@ -16,7 +16,7 @@
 
 VulkanApplication::VulkanApplication()
 	: windowWidth(0), windowHeight(0), objectsCreated(false), redrawScene(false), resetScene(true), showFPS(false), vSync(true),
-	  depthBufferFormat(VK_FORMAT_UNDEFINED), fontRenderPass(nullptr), textHelper(nullptr)
+	  depthBufferFormat(VK_FORMAT_UNDEFINED), fontRenderPass(nullptr)
 {
 }
 VulkanApplication::~VulkanApplication() = default;

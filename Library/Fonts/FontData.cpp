@@ -5,7 +5,7 @@
 #include <Utils/StrUtil.h>
 #include <iostream>
 
-FontData::FontData(const std::string& _faceName, int _fontSize, bool swapY) : faceName(_faceName), fontSize(_fontSize), anyColourGlyphs(false), swapY(swapY)
+FontData::FontData(const std::string& _faceName, int _fontSize) : faceName(_faceName), fontSize(_fontSize), anyColourGlyphs(false)
 {
 }
 FontData::~FontData() = default;	// Other object files don't know how big FontData is...
@@ -44,13 +44,13 @@ uint32_t CalculateTextureHeight(Packer& packer, const std::map<char32_t, std::un
 	return (uint32_t)pow(2, ceil(log2(height)));	// Round to nearest power of 2
 }
 
-unsigned char* CreateFontTexture(const std::map<char32_t, std::unique_ptr<CharData>>& charList, uint32_t* width, uint32_t* height, bool anyColourGlyphs, bool swappedY)
+unsigned char* CreateFontTexture(const std::map<char32_t, std::unique_ptr<CharData>>& charList, uint32_t* width, uint32_t* height, bool anyColourGlyphs)
 {
 	*width = CalculateTextureWidth(charList);
 	if (width == 0)
 		return nullptr;
 
-	Packer packer(*width, FONT_BITMAP_SPACING, swappedY);
+	Packer packer(*width, FONT_BITMAP_SPACING);
 	*height = CalculateTextureHeight(packer, charList);
 	auto numPixels = *width * *height;
 	return packer.Pack(numPixels, charList, anyColourGlyphs);
@@ -73,7 +73,7 @@ void FontData::LoadFont(const std::vector<const PrintInfo*>& prints)
 	ascent = ft_font.GetLineAscent();
 	descent = ft_font.GetLineDescent();
 
-	bitmapData.reset(CreateFontTexture(charList, &bitmapWidth, &bitmapHeight, anyColourGlyphs, swapY));
+	bitmapData.reset(CreateFontTexture(charList, &bitmapWidth, &bitmapHeight, anyColourGlyphs));
 
 	for (auto& print : prints)
 	{
